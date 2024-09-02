@@ -2,13 +2,16 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:liana_plant/constants/app_constants.dart';
+import 'package:liana_plant/constants/styles.dart';
 import 'package:liana_plant/models/map_marker_model.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:liana_plant/pages/master_creation_page.dart';
 import 'package:liana_plant/widgets/map_card.dart';
 
 class HomePage extends StatefulWidget {
@@ -19,6 +22,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+  String? selectedLanguage;
+  late AnimationController _animationController;
   final pageController = PageController();
   int selectedIndex = 0;
   var currentLocation = AppConstants.myLocation;
@@ -27,17 +32,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   late final MapController mapController;
 
-  var mapMarkers = [];
+  List<MapMarker> mapMarkers = [];
 
   @override
   void initState() {
     _getData();
     super.initState();
+    selectedLanguage = 'en';
+    _animationController = AnimationController(
+        duration: const Duration(milliseconds: 1000), vsync: this);
     mapController = MapController();
     mapController.mapEventStream
         .where((event) => event is MapEventMoveEnd)
-        .listen((event) {
-    });
+        .listen((event) {});
   }
 
   void _getData([
@@ -56,25 +63,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
         Position position = await Geolocator.getCurrentPosition(
             desiredAccuracy: LocationAccuracy.high);
-        if (longitude == 0.00 || latitude == 0.00) {
-          longitude = position.longitude;
-          latitude = position.latitude;
-        }
+        longitude = position.longitude;
+        latitude = position.latitude;
       } else {
         longitude = 50.249198;
         latitude = 30.350024;
       }
     }
-
-    setState(() {
-      loading = false; //make loading true to show progressindicator
-    });
-
     mapMarkers = await getData(longitude, latitude, zoom);
 
     setState(() {
       loading = false;
+      currentLocation = LatLng(latitude, longitude);
     });
+  }
+
+  void _changeLanguage(BuildContext context, String languageCode) async {
+    await FlutterI18n.refresh(context, Locale(languageCode));
+    Navigator.of(context).pop(); // Close the drawer
+    setState(() {});
   }
 
   @override
@@ -88,10 +95,42 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     pointIndex = 0;
     String mapStyleId = AppConstants.mapBoxStyleId;
     String accessToken = AppConstants.mapBoxAccessToken;
+
     return Scaffold(
+      endDrawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 16.0, top: 16.0),
+              child: Text(
+                '${FlutterI18n.translate(context, 'language')}:',
+                style: const TextStyle(color: Styles.descriptionColor),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 16.0),
+              child: DropdownButton<String>(
+                value: selectedLanguage,
+                items: AppConstants.languages,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedLanguage = newValue;
+                  });
+                  _changeLanguage(context, newValue!);
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 33, 32, 32),
-        title: const Text('Liana best'),
+        backgroundColor: Styles.backgroundColor,
+        title: const Row(
+          children: [
+            Text(AppConstants.appTitle),
+          ],
+        ),
       ),
       body: loading
           ? const CircularProgressIndicator()
@@ -108,10 +147,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate:
-                          "https://api.mapbox.com/styles/v1/rotting/$mapStyleId/tiles/256/{z}/{x}/{y}@2x?access_token=$accessToken",
+                      urlTemplate: AppConstants.urlTemplate,
                       userAgentPackageName: 'com.it-pragmat.plant',
-                      // Plenty of other options available!
                     ),
                     MarkerLayer(
                       markers: [
@@ -131,7 +168,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 selectedIndex = i;
                                 currentLocation = mapMarkers[i].location ??
                                     AppConstants.myLocation;
-                                _animatedMapMove(currentLocation, 11.5);
+                                _animatedMapMove(
+                                    currentLocation, mapController.zoom);
                                 setState(() {});
                               },
                               child: AnimatedScale(
@@ -162,7 +200,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       selectedIndex = value;
                       currentLocation =
                           mapMarkers[value].location ?? AppConstants.myLocation;
-                      _animatedMapMove(currentLocation, 15);
+                      _animatedMapMove(currentLocation, mapController.zoom);
                       setState(() {});
                     },
                     itemCount: mapMarkers.length,
@@ -177,24 +215,65 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   right: 0,
                   top: 10,
                   height: 30,
-                  //width: 20,
                   child: Padding(
                     padding: EdgeInsets.only(
                         left: MediaQuery.of(context).size.width * 0.25,
                         right: MediaQuery.of(context).size.width * 0.25),
                     child: FloatingActionButton.extended(
-                      backgroundColor: Colors.black,
+                      backgroundColor: Styles.backgroundColor,
                       onPressed: () {},
                       icon: const Icon(
                         Icons.search,
                         size: 24.0,
                         color: Colors.white,
                       ),
-                      label: const Text(
-                        'Search in this area',
+                      label: Text(
+                        FlutterI18n.translate(context, 'search_in_this_area'),
                         style: TextStyle(color: Colors.white),
-                      ), // <-- Text
+                      ),
                     ),
+                  ),
+                ),
+                Positioned(
+                  right: 10,
+                  top: MediaQuery.of(context).size.height * 0.01,
+                  child: Column(
+                    children: [
+                      FloatingActionButton(
+                        onPressed: () {
+                          //Navigator.pushNamed(context, '/create-master');
+                          Navigator.pushNamed(context, '/map-picker');
+                        },
+                        backgroundColor: Styles.backgroundColor,
+                        child: const Icon(Icons.add_location_alt_outlined),
+                      ),
+                    ],
+                  ),
+                ),
+                // Додати кнопки масштабування
+                Positioned(
+                  right: 10,
+                  bottom: MediaQuery.of(context).size.height * 0.3 + 30,
+                  child: Column(
+                    children: [
+                      FloatingActionButton(
+                        onPressed: () {
+                          final zoom = mapController.zoom + 1;
+                          mapController.move(mapController.center, zoom);
+                        },
+                        backgroundColor: Styles.backgroundColor,
+                        child: const Icon(Icons.zoom_in),
+                      ),
+                      const SizedBox(height: 10),
+                      FloatingActionButton(
+                        onPressed: () {
+                          final zoom = mapController.zoom - 1;
+                          mapController.move(mapController.center, zoom);
+                        },
+                        backgroundColor: Styles.backgroundColor,
+                        child: const Icon(Icons.zoom_out),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -202,38 +281,29 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
   void _animatedMapMove(LatLng destLocation, double destZoom) {
-    // Create some tweens. These serve to split up the transition from one location to another.
-    // In our case, we want to split the transition be<tween> our current map center and the destination.
     final latTween = Tween<double>(
         begin: mapController.center.latitude, end: destLocation.latitude);
     final lngTween = Tween<double>(
         begin: mapController.center.longitude, end: destLocation.longitude);
     final zoomTween = Tween<double>(begin: mapController.zoom, end: destZoom);
 
-    // Create a animation controller that has a duration and a TickerProvider.
-    var controller = AnimationController(
-        duration: const Duration(milliseconds: 1000), vsync: this);
-    // The animation determines what path the animation will take. You can try different Curves values, although I found
-    // fastOutSlowIn to be my favorite.
-    Animation<double> animation =
-        CurvedAnimation(parent: controller, curve: Curves.fastOutSlowIn);
+    Animation<double> animation = CurvedAnimation(
+        parent: _animationController, curve: Curves.fastOutSlowIn);
 
-    controller.addListener(() {
+    _animationController.addListener(() {
       mapController.move(
         LatLng(latTween.evaluate(animation), lngTween.evaluate(animation)),
         zoomTween.evaluate(animation),
       );
     });
 
-    animation.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        controller.dispose();
-      } else if (status == AnimationStatus.dismissed) {
-        controller.dispose();
-      }
-    });
-
-    controller.forward();
+    _animationController.forward(from: 0.0);
   }
 }

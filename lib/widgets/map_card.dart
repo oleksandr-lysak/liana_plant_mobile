@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:liana_plant/constants/app_constants.dart';
+import 'package:liana_plant/constants/styles.dart';
 import 'package:liana_plant/models/map_marker_model.dart';
 
 class MapCard extends StatelessWidget {
@@ -7,8 +9,9 @@ class MapCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String description = item?.description ?? '';
-    if (description.length > 100) {
-      description = '${description.substring(0, 100)}...';
+    String photo = AppConstants.publicServerUrl + item!.image! ?? '';
+    if (description.length > 200) {
+      description = '${description.substring(0, 200)}...';
     }
     String address = item?.address ?? '';
     if (address.length > 27) {
@@ -21,7 +24,7 @@ class MapCard extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        color: const Color.fromARGB(255, 30, 29, 29),
+        color: Styles.backgroundColor,
         child: Row(
           children: [
             const SizedBox(width: 5),
@@ -33,19 +36,18 @@ class MapCard extends StatelessWidget {
                     child: ListView.builder(
                       padding: EdgeInsets.zero,
                       scrollDirection: Axis.horizontal,
-                      itemCount: item?.rating,
+                      itemCount: (item?.rating?.toInt() ?? 0),
                       itemBuilder: (BuildContext context, int index) {
                         return const Icon(
                           Icons.star,
-                          color: Colors.orange,
+                          color: Styles.primaryColor,
                         );
                       },
                     ),
                   ),
-
-                  //Text(item!.rating.toString()),
+                  //Text(item!.rating!.toStringAsFixed(2)),
                   Expanded(
-                    flex: 6,
+                    flex: 4,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -54,6 +56,7 @@ class MapCard extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
+                            color: Styles.titleColor,
                           ),
                         ),
                         const SizedBox(height: 5),
@@ -61,7 +64,7 @@ class MapCard extends StatelessWidget {
                           address ?? '',
                           style: const TextStyle(
                             fontSize: 14,
-                            color: Colors.blueGrey,
+                            color: Styles.subtitleColor,
                           ),
                         ),
                         const SizedBox(height: 5),
@@ -69,7 +72,7 @@ class MapCard extends StatelessWidget {
                           description,
                           style: const TextStyle(
                             fontSize: 14,
-                            color: Colors.grey,
+                            color: Styles.descriptionColor,
                           ),
                         ),
                         const SizedBox(height: 5),
@@ -77,7 +80,7 @@ class MapCard extends StatelessWidget {
                           item!.phone.toString(),
                           style: const TextStyle(
                             fontSize: 14,
-                            color: Colors.orange,
+                            color: Styles.primaryColor,
                           ),
                         ),
                       ],
@@ -95,8 +98,8 @@ class MapCard extends StatelessWidget {
                   padding: const EdgeInsets.all(10.0),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: Image.network(item?.image ?? '', fit: BoxFit.cover,
-                        errorBuilder: (BuildContext context, Object error,
+                    child: Image.network(photo, fit: BoxFit.cover, errorBuilder:
+                        (BuildContext context, Object error,
                             StackTrace? stackTrace) {
                       return const Icon(
                         Icons.error,
