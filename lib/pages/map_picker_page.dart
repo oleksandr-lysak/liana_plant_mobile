@@ -47,7 +47,7 @@ class MapPickerPageState extends State<MapPickerPage> {
 
   void _updateSelectedLocation() {
     setState(() {
-      _selectedLocation = _mapController.center;
+      _selectedLocation = _mapController.camera.center;
     });
   }
 

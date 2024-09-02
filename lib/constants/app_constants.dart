@@ -13,7 +13,7 @@ class AppConstants {
   static const String serverUrl = 'http://10.0.2.2:8002/api/';
   static const String publicServerUrl = 'http://10.0.2.2:8002/';
 
-  static final myLocation = LatLng(47.844637, 11.147302);
+  static const myLocation = LatLng(47.844637, 11.147302);
 
   static const String defaultLanguage = 'en';
   static const String appTitle = 'Liana the best';

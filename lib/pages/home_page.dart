@@ -4,14 +4,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:liana_plant/constants/app_constants.dart';
 import 'package:liana_plant/constants/styles.dart';
 import 'package:liana_plant/models/map_marker_model.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:liana_plant/pages/master_creation_page.dart';
 import 'package:liana_plant/widgets/map_card.dart';
 
 class HomePage extends StatefulWidget {
@@ -86,16 +84,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    late List<Marker> markers;
-    late int pointIndex;
-    List<LatLng> points = [
-      const LatLng(51.5, -0.09),
-      const LatLng(49.8566, 3.3522),
-    ];
-    pointIndex = 0;
-    String mapStyleId = AppConstants.mapBoxStyleId;
-    String accessToken = AppConstants.mapBoxAccessToken;
-
     return Scaffold(
       endDrawer: Drawer(
         child: ListView(
@@ -141,9 +129,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   options: MapOptions(
                     minZoom: 2,
                     maxZoom: 18,
-                    zoom: 11,
                     initialZoom: 11,
-                    center: currentLocation,
+                    initialCenter: currentLocation,
                   ),
                   children: [
                     TileLayer(
@@ -169,7 +156,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 currentLocation = mapMarkers[i].location ??
                                     AppConstants.myLocation;
                                 _animatedMapMove(
-                                    currentLocation, mapController.zoom);
+                                    currentLocation, mapController.camera.zoom);
                                 setState(() {});
                               },
                               child: AnimatedScale(
@@ -200,7 +187,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       selectedIndex = value;
                       currentLocation =
                           mapMarkers[value].location ?? AppConstants.myLocation;
-                      _animatedMapMove(currentLocation, mapController.zoom);
+                      _animatedMapMove(
+                          currentLocation, mapController.camera.zoom);
                       setState(() {});
                     },
                     itemCount: mapMarkers.length,
@@ -229,7 +217,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                       label: Text(
                         FlutterI18n.translate(context, 'search_in_this_area'),
-                        style: TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ),
                   ),
@@ -258,8 +246,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     children: [
                       FloatingActionButton(
                         onPressed: () {
-                          final zoom = mapController.zoom + 1;
-                          mapController.move(mapController.center, zoom);
+                          final zoom = mapController.camera.zoom + 1;
+                          mapController.move(mapController.camera.center, zoom);
                         },
                         backgroundColor: Styles.backgroundColor,
                         child: const Icon(Icons.zoom_in),
@@ -267,8 +255,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       const SizedBox(height: 10),
                       FloatingActionButton(
                         onPressed: () {
-                          final zoom = mapController.zoom - 1;
-                          mapController.move(mapController.center, zoom);
+                          final zoom = mapController.camera.zoom - 1;
+                          mapController.move(mapController.camera.center, zoom);
                         },
                         backgroundColor: Styles.backgroundColor,
                         child: const Icon(Icons.zoom_out),
@@ -289,10 +277,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   void _animatedMapMove(LatLng destLocation, double destZoom) {
     final latTween = Tween<double>(
-        begin: mapController.center.latitude, end: destLocation.latitude);
+        begin: mapController.camera.center.latitude,
+        end: destLocation.latitude);
     final lngTween = Tween<double>(
-        begin: mapController.center.longitude, end: destLocation.longitude);
-    final zoomTween = Tween<double>(begin: mapController.zoom, end: destZoom);
+        begin: mapController.camera.center.longitude,
+        end: destLocation.longitude);
+    final zoomTween =
+        Tween<double>(begin: mapController.camera.zoom, end: destZoom);
 
     Animation<double> animation = CurvedAnimation(
         parent: _animationController, curve: Curves.fastOutSlowIn);

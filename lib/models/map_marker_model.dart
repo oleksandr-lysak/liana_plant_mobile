@@ -1,8 +1,3 @@
-// import 'dart:convert';
-// import 'dart:ffi';
-
-import 'dart:ffi';
-
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
@@ -48,8 +43,8 @@ late Response response;
 Dio dio = Dio();
 
 bool error = false; //for error status
-String errmsg = ""; //to assing any error message from API/runtime
-var apidata; //for decoded JSON data
+String errMsg = ""; //to assing any error message from API/runtime
+var apiData; //for decoded JSON data
 
 Future<List<MapMarker>> getData(
     double longitude, double latitude, double zoom) async {
@@ -58,19 +53,13 @@ Future<List<MapMarker>> getData(
     LocationPermission permission = await Geolocator.checkPermission();
   }
   String serverUrl = AppConstants.serverUrl;
-  String url = serverUrl +
-      "masters?lng=" +
-      longitude.toString() +
-      '&lat=' +
-      latitude.toString() +
-      '&zoom=' +
-      zoom.toString() +
-      '&page=1';
-  print(url);
-  Response response = await dio.get(url);
-  apidata = response.data; //get JSON decoded data from response
+  String url =
+      '${serverUrl}masters?lng=$longitude&lat=$latitude&zoom=$zoom&page=1';
 
-  var tagObjsJson = apidata["data"] as List;
+  Response response = await dio.get(url);
+  apiData = response.data; //get JSON decoded data from response
+
+  var tagObjsJson = apiData["data"] as List;
   List<MapMarker> tagObjs =
       tagObjsJson.map((tagJson) => MapMarker.fromJson(tagJson)).toList();
 

@@ -9,7 +9,7 @@ class MapCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String description = item?.description ?? '';
-    String photo = AppConstants.publicServerUrl + item!.image! ?? '';
+    String photo = AppConstants.publicServerUrl + item!.image!;
     if (description.length > 200) {
       description = '${description.substring(0, 200)}...';
     }
@@ -45,7 +45,6 @@ class MapCard extends StatelessWidget {
                       },
                     ),
                   ),
-                  //Text(item!.rating!.toStringAsFixed(2)),
                   Expanded(
                     flex: 4,
                     child: Column(
@@ -61,7 +60,7 @@ class MapCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          address ?? '',
+                          address,
                           style: const TextStyle(
                             fontSize: 14,
                             color: Styles.subtitleColor,

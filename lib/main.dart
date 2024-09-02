@@ -4,10 +4,9 @@ import 'package:liana_plant/pages/home_page.dart';
 import 'package:liana_plant/pages/map_picker_page.dart';
 import 'package:liana_plant/pages/master_creation_page.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
-import 'package:flutter_i18n/loaders/file_translation_loader.dart';
 import 'package:liana_plant/widgets/photo_grid_page.dart';
 
-import 'classes/app_scrol_behavior.dart';
+import 'classes/app_scroll_behavior.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,9 +31,7 @@ class MyApp extends StatelessWidget {
             fallbackFile: AppConstants.defaultLanguage,
             forcedLocale: const Locale(AppConstants.defaultLanguage),
           ),
-          missingTranslationHandler: (key, locale) {
-            print('Missing Key: $key, locale: $locale');
-          },
+          missingTranslationHandler: (key, locale) {},
         ),
       ],
       routes: {
