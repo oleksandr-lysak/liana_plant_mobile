@@ -1,0 +1,43 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
+import 'package:liana_plant/constants/app_constants.dart';
+import 'package:liana_plant/constants/styles.dart';
+import 'package:liana_plant/pages/home/drawer_menu.dart';
+import 'package:liana_plant/pages/home/map_view.dart';
+import 'package:liana_plant/services/location_service.dart';
+
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  String? selectedLanguage;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedLanguage = 'en';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      endDrawer: DrawerMenu(
+        selectedLanguage: selectedLanguage,
+        onLanguageChanged: (String? newValue) {
+          setState(() {
+            selectedLanguage = newValue;
+          });
+        },
+      ),
+      appBar: AppBar(
+        backgroundColor: Styles.backgroundColor,
+        title: const Text(AppConstants.appTitle),
+      ),
+      body: MapView(),
+    );
+  }
+}

@@ -5,7 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:liana_plant/constants/styles.dart';
 
-import '../constants/app_constants.dart';
+import '../../constants/app_constants.dart';
 
 class MapPickerPage extends StatefulWidget {
   const MapPickerPage({super.key});
@@ -61,7 +61,11 @@ class MapPickerPageState extends State<MapPickerPage> {
             IconButton(
               icon: const Icon(Icons.navigate_next),
               onPressed: () {
-                Navigator.pushNamed(context, '/create-master');
+                Navigator.pushNamed(
+                  context,
+                  '/create-master',
+                  arguments: _selectedLocation,
+                );
               },
             ),
         ],
@@ -90,6 +94,21 @@ class MapPickerPageState extends State<MapPickerPage> {
           const Center(
             child:
                 Icon(Icons.location_on, color: Styles.primaryColor, size: 40.0),
+          ),
+          Positioned(
+            left: MediaQuery.of(context).size.width * 0.01,
+            right: MediaQuery.of(context).size.width * 0.01,
+            bottom: MediaQuery.of(context).size.height * 0.02,
+            child: Container(
+              color: Styles.backgroundColor,
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                _selectedLocation != null
+                    ? 'Latitude: ${_selectedLocation!.latitude.toStringAsFixed(6)}, Longitude: ${_selectedLocation!.longitude.toStringAsFixed(6)}'
+                    : 'Select a location',
+                style: const TextStyle(fontSize: 16),
+              ),
+            ),
           ),
         ],
       ),

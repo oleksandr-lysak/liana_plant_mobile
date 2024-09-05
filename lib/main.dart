@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:liana_plant/constants/app_constants.dart';
-import 'package:liana_plant/pages/home_page.dart';
-import 'package:liana_plant/pages/map_picker_page.dart';
-import 'package:liana_plant/pages/master_creation_page.dart';
+import 'package:liana_plant/pages/home/home_page.dart';
+import 'package:liana_plant/pages/create_master/map_picker_page.dart';
+import 'package:liana_plant/pages/create_master/master_creation_page.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:liana_plant/widgets/photo_grid_page.dart';
 

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:liana_plant/constants/styles.dart';
+import 'package:photo_manager/photo_manager.dart';
+import 'package:latlong2/latlong.dart' as LatLng2;
 
 class MasterCreationPage extends StatefulWidget {
   const MasterCreationPage({super.key});
@@ -15,6 +17,7 @@ class MasterCreationPage extends StatefulWidget {
 class MasterCreationPageState extends State<MasterCreationPage> {
   final _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
+  late LatLng2.LatLng location;
   File? _photo;
   String? _photoBase64;
   final TextEditingController _countryCodeController = TextEditingController();
@@ -71,6 +74,8 @@ class MasterCreationPageState extends State<MasterCreationPage> {
 
   @override
   Widget build(BuildContext context) {
+    location = ModalRoute.of(context)!.settings.arguments as LatLng2.LatLng;
+
     return Scaffold(
       appBar:
           AppBar(title: Text(FlutterI18n.translate(context, 'create_master'))),
@@ -82,17 +87,20 @@ class MasterCreationPageState extends State<MasterCreationPage> {
           child: ListView(
             children: [
               TextFormField(
-                controller: _countryCodeController,
-                decoration: InputDecoration(
-                    labelText: FlutterI18n.translate(context, 'country_code')),
-                validator: (value) => value?.isEmpty ?? true
-                    ? FlutterI18n.translate(context, 'required')
-                    : null,
-              ),
-              TextFormField(
                 controller: _phoneController,
                 decoration: InputDecoration(
-                    labelText: FlutterI18n.translate(context, 'phone')),
+                  labelText: FlutterI18n.translate(context, 'phone'),
+                  focusedBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(
+                        color:
+                            Styles.primaryColor), // Задайте тут потрібний колір
+                  ),
+                  enabledBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(
+                        color: Styles
+                            .descriptionColor), // Задайте колір для неактивного стану
+                  ),
+                ),
                 validator: (value) => value?.isEmpty ?? true
                     ? FlutterI18n.translate(context, 'required')
                     : null,
@@ -103,15 +111,6 @@ class MasterCreationPageState extends State<MasterCreationPage> {
                     labelText: FlutterI18n.translate(context, 'name')),
                 validator: (value) => value?.isEmpty ?? true
                     ? FlutterI18n.translate(context, 'required')
-                    : null,
-              ),
-              TextFormField(
-                controller: _ageController,
-                decoration: InputDecoration(
-                    labelText: FlutterI18n.translate(context, 'age')),
-                keyboardType: TextInputType.number,
-                validator: (value) => int.tryParse(value ?? '') == null
-                    ? FlutterI18n.translate(context, 'enter_valid_number')
                     : null,
               ),
               TextFormField(

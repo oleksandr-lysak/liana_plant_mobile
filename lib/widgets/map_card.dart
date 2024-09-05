@@ -6,6 +6,7 @@ import 'package:liana_plant/models/map_marker_model.dart';
 class MapCard extends StatelessWidget {
   const MapCard({super.key, required this.item});
   final MapMarker? item;
+
   @override
   Widget build(BuildContext context) {
     String description = item?.description ?? '';
@@ -17,6 +18,7 @@ class MapCard extends StatelessWidget {
     if (address.length > 27) {
       address = '${address.substring(0, 27)}..';
     }
+
     return Padding(
       padding: const EdgeInsets.all(5.0),
       child: Card(
@@ -29,10 +31,13 @@ class MapCard extends StatelessWidget {
           children: [
             const SizedBox(width: 5),
             Expanded(
+              flex: 3,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
+                  SizedBox(
+                    height: 20,
                     child: ListView.builder(
                       padding: EdgeInsets.zero,
                       scrollDirection: Axis.horizontal,
@@ -45,72 +50,62 @@ class MapCard extends StatelessWidget {
                       },
                     ),
                   ),
-                  Expanded(
-                    flex: 4,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item?.title ?? '',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Styles.titleColor,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          address,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Styles.subtitleColor,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          description,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Styles.descriptionColor,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          item!.phone.toString(),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Styles.primaryColor,
-                          ),
-                        ),
-                      ],
+                  const SizedBox(height: 5),
+                  Text(
+                    item?.title ?? '',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Styles.titleColor,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    address,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Styles.subtitleColor,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    description,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Styles.descriptionColor,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    item!.phone.toString(),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Styles.primaryColor,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 5),
-
-            Stack(
-              children: [
-                Expanded(
-                    child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.network(photo, fit: BoxFit.cover, errorBuilder:
-                        (BuildContext context, Object error,
-                            StackTrace? stackTrace) {
+            Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: SizedBox(
+                width: 100, // Adjust the width as needed
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.network(
+                    photo,
+                    fit: BoxFit.cover,
+                    errorBuilder: (BuildContext context, Object error,
+                        StackTrace? stackTrace) {
                       return const Icon(
                         Icons.error,
                         color: Colors.red,
                       );
-                    }),
+                    },
                   ),
-                )),
-              ],
+                ),
+              ),
             ),
-
-            //const SizedBox(width: 5),
           ],
         ),
       ),
