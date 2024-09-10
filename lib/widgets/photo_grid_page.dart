@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:latlong2/latlong.dart'as latlong; 
 
 class PhotoGridPage extends StatefulWidget {
   const PhotoGridPage({Key? key}) : super(key: key);
@@ -13,6 +14,12 @@ class PhotoGridPage extends StatefulWidget {
 class _PhotoGridPageState extends State<PhotoGridPage> {
   final ImagePicker _picker = ImagePicker();
   List<AssetEntity> _photos = [];
+  AssetEntity? _selectedPhoto;
+  late latlong.LatLng? _selectedLocation;
+  late String? _phone;
+  late String? _name;
+  late String? _description;
+  late int? _specialtyId;
 
   @override
   void initState() {
@@ -30,7 +37,7 @@ class _PhotoGridPageState extends State<PhotoGridPage> {
       );
       final List<AssetEntity> photos = await albums.first.getAssetListPaged(
         page: 0,
-        size: 50, // Кількість фото, яку хочеш завантажити
+        size: 50,
       );
       setState(() {
         _photos = photos;
@@ -43,19 +50,78 @@ class _PhotoGridPageState extends State<PhotoGridPage> {
   Future<void> _pickCameraImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
-      setState(() {
-        // Тут потрібно створити AssetEntity з нового фото і додати його до списку.
-        // Однак, створення AssetEntity з нового фото не є простим завданням
-        // в рамках бібліотеки photo_manager. Можливо, доведеться зберігати файл на диск
-        // і потім сканувати його.
-      });
+      final file = File(pickedFile.path);
+      final asset = await _saveImageToGallery(file);
+      if (asset != null) {
+        setState(() {
+          _photos.insert(0, asset);
+        });
+      }
     }
+  }
+
+  Future<AssetEntity?> _saveImageToGallery(File file) async {
+    final bytes = await file.readAsBytes();
+    final result = await PhotoManager.editor.saveImage(bytes, title: 'photo1', filename: 'photo1');
+    if (result != null) {
+      final List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
+        type: RequestType.image,
+        onlyAll: true,
+      );
+      final List<AssetEntity> photos = await albums.first.getAssetListPaged(
+        page: 0,
+        size: 50,
+      );
+      try {
+        return photos.firstWhere((photo) => photo.id == result.id);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  void _onPhotoTapped(AssetEntity photo) {
+    setState(() {
+      if (_selectedPhoto == photo) {
+        _selectedPhoto = null; // Деактивувати вибір, якщо повторно натиснули на вибране фото
+      } else {
+        _selectedPhoto = photo; // Вибрати нове фото
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    _selectedLocation = (ModalRoute.of(context)?.settings.arguments as List<dynamic>? ?? [])[0] as latlong.LatLng?;
+    _phone  = (ModalRoute.of(context)?.settings.arguments as List<dynamic>? ?? [])[1] as String?;
+    _name = (ModalRoute.of(context)?.settings.arguments as List<dynamic>? ?? [])[2] as String?;
+    _description = (ModalRoute.of(context)?.settings.arguments as List<dynamic>? ?? [])[3] as String?;
+    _specialtyId= (ModalRoute.of(context)?.settings.arguments as List<dynamic>? ?? [])[4] as int?;
+                    
     return Scaffold(
-      appBar: AppBar(title: const Text('Photo Grid')),
+      appBar: AppBar(title: const Text('Photo Grid'),
+      actions: [
+        if (_selectedPhoto != null)
+          IconButton(
+            icon: const Icon(Icons.navigate_next),
+            onPressed: () {
+              Navigator.pushNamed(
+                  context,
+                  '/summary-info',
+                  arguments: [
+                    _selectedLocation,
+                    _phone,
+                    _name,
+                    _description,
+                    _specialtyId,
+                    _selectedPhoto?.id,
+                  ],
+                );
+            },
+          ),
+      ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: GridView.builder(
@@ -75,16 +141,43 @@ class _PhotoGridPageState extends State<PhotoGridPage> {
                 ),
               );
             } else {
-              return FutureBuilder<File?>(
-                future: _photos[index - 1].file,
-                builder: (context, snapshot) {
-                  final file = snapshot.data;
-                  if (file == null) return const SizedBox();
-                  return Image.file(
-                    file,
-                    fit: BoxFit.cover,
-                  );
-                },
+              final photo = _photos[index - 1];
+              return GestureDetector(
+                onTap: () => _onPhotoTapped(photo),
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0), // Додає округлені кути
+                      child: FutureBuilder<File?>(
+                        future: photo.file,
+                        builder: (context, snapshot) {
+                          final file = snapshot.data;
+                          if (file == null) return const SizedBox();
+                          return Image.file(
+                            file,
+                            fit: BoxFit.cover, // Зміна BoxFit для кращого відображення
+                            width: double.infinity,
+                            height: double.infinity,
+                          );
+                        },
+                      ),
+                    ),
+                    if (_selectedPhoto == photo)
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: Container(
+                          padding: const EdgeInsets.all(4.0),
+                          color: Colors.black54,
+                          child: const Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: 24.0, // Розмір галочки
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               );
             }
           },

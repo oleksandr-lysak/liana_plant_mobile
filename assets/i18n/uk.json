@@ -1,5 +1,22 @@
 {
   "search_in_this_area": "Шукати в цій області",
   "select_location": "Виберіть розташування",
-  "language": "Мова"
+  "language": "Мова",
+  "phone": "Телефон",
+  "create_master": "Створити майстра",
+  "name": "Ім'я",
+  "description": "Опис",
+  "pick_photo": "Вибрати фото",
+  "submit": "Створити",
+  "select_speciality": "Спеціальність",
+  "summary_info_page": {
+    "photo": "Фото",
+    "address": "Адреса",
+    "phone": "Телефон",
+    "specialty": "Спеціальність",
+    "description": "Опис",
+    "register_button": "Зареєструватися",
+    "title": "Загальна інформація",
+    "name": "Ім'я"
+  }
 }

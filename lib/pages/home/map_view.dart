@@ -5,16 +5,19 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:liana_plant/constants/app_constants.dart';
 import 'package:liana_plant/constants/styles.dart';
 import 'package:liana_plant/models/map_marker_model.dart';
+import 'package:liana_plant/widgets/loading.dart';
 import 'package:liana_plant/widgets/map_card.dart';
 import 'package:liana_plant/services/location_service.dart';
 import 'package:liana_plant/services/animation_service.dart';
 
 class MapView extends StatefulWidget {
+  const MapView({super.key});
+
   @override
-  _MapViewState createState() => _MapViewState();
+  MapViewState createState() => MapViewState();
 }
 
-class _MapViewState extends State<MapView> with TickerProviderStateMixin {
+class MapViewState extends State<MapView> with TickerProviderStateMixin {
   final pageController = PageController();
   late final MapController mapController;
   late AnimationController _animationController;
@@ -74,7 +77,9 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return loading
-        ? const Center(child: CircularProgressIndicator())
+        ? const Center(
+            child: Loading(),
+          )
         : Stack(
             children: [
               FlutterMap(
@@ -150,7 +155,8 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                     Navigator.pushNamed(context, '/map-picker');
                   },
                   backgroundColor: Styles.backgroundColor,
-                  child: const Icon(Icons.add_location_alt_outlined),
+                  child: const Icon(Icons.add_location_alt_outlined,
+                      color: Styles.primaryColor),
                 ),
               ),
               Positioned(
@@ -161,7 +167,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                   onPressed: _moveToCurrentLocation,
                   backgroundColor: Styles.backgroundColor,
                   child: const Icon(Icons
-                      .my_location), // Іконка для позиціювання на поточному положенні
+                      .my_location,color: Styles.primaryColor,), // Іконка для позиціювання на поточному положенні
                 ),
               ),
               Positioned(
@@ -175,7 +181,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                         mapController.move(mapController.camera.center, zoom);
                       },
                       backgroundColor: Styles.backgroundColor,
-                      child: const Icon(Icons.zoom_in),
+                      child: const Icon(Icons.zoom_in, color: Styles.primaryColor),
                     ),
                     const SizedBox(height: 10),
                     FloatingActionButton(
@@ -184,7 +190,7 @@ class _MapViewState extends State<MapView> with TickerProviderStateMixin {
                         mapController.move(mapController.camera.center, zoom);
                       },
                       backgroundColor: Styles.backgroundColor,
-                      child: const Icon(Icons.zoom_out),
+                      child: const Icon(Icons.zoom_out, color: Styles.primaryColor),
                     ),
                   ],
                 ),

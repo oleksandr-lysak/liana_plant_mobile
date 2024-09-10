@@ -6,6 +6,8 @@ import 'package:liana_plant/pages/home/drawer_menu.dart';
 import 'package:liana_plant/pages/home/map_view.dart';
 import 'package:liana_plant/services/location_service.dart';
 
+import '../../services/language_service.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -19,7 +21,20 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    selectedLanguage = 'en';
+    loadSelectedLanguage();
+  }
+
+  Future<void> loadSelectedLanguage() async {
+    final languageCode = await LanguageService.getLanguage();
+    setState(() {
+      selectedLanguage = languageCode;
+    });
+  }
+
+  void onLanguageChanged(String? languageCode) {
+    setState(() {
+      selectedLanguage = languageCode;
+    });
   }
 
   @override
@@ -27,11 +42,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       endDrawer: DrawerMenu(
         selectedLanguage: selectedLanguage,
-        onLanguageChanged: (String? newValue) {
-          setState(() {
-            selectedLanguage = newValue;
-          });
-        },
+        onLanguageChanged: onLanguageChanged,
       ),
       appBar: AppBar(
         backgroundColor: Styles.backgroundColor,

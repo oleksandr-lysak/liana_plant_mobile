@@ -97,9 +97,10 @@ class MapCard extends StatelessWidget {
                     fit: BoxFit.cover,
                     errorBuilder: (BuildContext context, Object error,
                         StackTrace? stackTrace) {
-                      return const Icon(
-                        Icons.error,
-                        color: Colors.red,
+                      return Image.asset(
+                        'assets/images/user_icon.png',
+                        width: 100, // налаштуйте розміри за потреби
+                        height: 100,
                       );
                     },
                   ),

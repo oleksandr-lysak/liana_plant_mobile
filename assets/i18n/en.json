@@ -1,5 +1,22 @@
 {
   "search_in_this_area": "Search in this area",
   "select_location": "Select Location",
-  "language": "Language"
+  "language": "Language",
+  "phone": "Phone",
+  "create_master": "Create Master",
+  "name": "Name",
+  "description": "Description",
+  "pick_photo": "Pick Photo",
+  "submit": "Submit",
+  "select_speciality": "Speciality",
+  "summary_info_page": {
+    "photo": "Photo",
+    "address": "Address",
+    "phone": "Phone",
+    "specialty": "Specialty",
+    "description": "Description",
+    "register_button": "Register",
+    "title": "Summary Information",
+    "name": "Name"
+  }
 }

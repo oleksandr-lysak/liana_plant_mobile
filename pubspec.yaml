@@ -47,6 +47,8 @@ dependencies:
   google_maps_flutter: ^2.9.0
   flutter_i18n: ^0.36.2
   photo_manager: ^3.2.3
+  camera: ^0.10.0
+  shared_preferences: ^2.0.8
 
 dev_dependencies:
   flutter_test:
@@ -75,6 +77,7 @@ flutter:
     - assets/icons/map_marker.svg
     - assets/images/user_icon.png
     - assets/i18n/
+    - assets/images/location-jump.gif
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

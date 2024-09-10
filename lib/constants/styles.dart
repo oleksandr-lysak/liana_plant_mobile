@@ -7,4 +7,5 @@ class Styles {
   static const subtitleColor = Colors.blueGrey;
   static const descriptionColor = Colors.grey;
   static const backgroundFormColor = Color.fromARGB(250, 255, 255, 255);
+  static const textInputColor = Color.fromARGB(250, 110, 110, 110);
 }

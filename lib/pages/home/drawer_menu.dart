@@ -2,21 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:liana_plant/constants/styles.dart';
 import 'package:liana_plant/constants/app_constants.dart';
+import 'package:liana_plant/services/language_service.dart';
 
-class DrawerMenu extends StatelessWidget {
-  final String? selectedLanguage;
-  final Function(String?) onLanguageChanged;
+class DrawerMenu extends StatefulWidget {
+  const DrawerMenu({super.key,void Function(String?)? onLanguageChanged, String? selectedLanguage});
 
-  const DrawerMenu({
-    Key? key,
-    required this.selectedLanguage,
-    required this.onLanguageChanged,
-  }) : super(key: key);
+  @override
+  _DrawerMenuState createState() => _DrawerMenuState();
+}
+
+class _DrawerMenuState extends State<DrawerMenu> {
+  String? _selectedLanguage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSelectedLanguage();
+  }
+
+  Future<void> _loadSelectedLanguage() async {
+    final languageCode = await LanguageService.getLanguage();
+    setState(() {
+      _selectedLanguage = languageCode;
+    });
+  }
 
   void _changeLanguage(BuildContext context, String? languageCode) async {
     if (languageCode != null) {
       await FlutterI18n.refresh(context, Locale(languageCode));
-      onLanguageChanged(languageCode);
+      await LanguageService.saveLanguage(languageCode);
+      setState(() {
+        _selectedLanguage = languageCode;
+      });
     }
   }
 
@@ -36,7 +53,7 @@ class DrawerMenu extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 16.0),
             child: DropdownButton<String>(
-              value: selectedLanguage,
+              value: _selectedLanguage,
               items: AppConstants.languages,
               onChanged: (String? newValue) {
                 _changeLanguage(context, newValue);
