@@ -10,6 +10,8 @@ import 'package:liana_plant/widgets/loading.dart';
 import 'package:latlong2/latlong.dart' as latlng;
 
 class SummaryInfoPage extends StatefulWidget {
+  const SummaryInfoPage({super.key});
+
   @override
   SummaryInfoPageState createState() => SummaryInfoPageState();
 }

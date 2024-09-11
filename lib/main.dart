@@ -58,8 +58,8 @@ class MyApp extends StatelessWidget {
         '/map-picker': (context) => const MapPickerPage(),
         '/photo-grid': (context) => const PhotoGridPage(),
         '/choose-photo': (context) => const PhotoGridPage(),
-        '/booking-page': (context) => BookingPage(),
-        '/summary-info': (context) => SummaryInfoPage(),
+        '/booking-page': (context) => const BookingPage(),
+        '/summary-info': (context) => const SummaryInfoPage(),
       },
     );
   }

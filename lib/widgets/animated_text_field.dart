@@ -22,10 +22,10 @@ class AnimatedTextField extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _AnimatedTextFieldState createState() => _AnimatedTextFieldState();
+  AnimatedTextFieldState createState() => AnimatedTextFieldState();
 }
 
-class _AnimatedTextFieldState extends State<AnimatedTextField> {
+class AnimatedTextFieldState extends State<AnimatedTextField> {
   bool _isFocused = false;
 
   @override
@@ -41,7 +41,6 @@ class _AnimatedTextFieldState extends State<AnimatedTextField> {
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 18.0),
         decoration: BoxDecoration(
-        
           color: Colors.white,
           borderRadius: BorderRadius.circular(14.0),
           border: Border.all(
@@ -68,20 +67,18 @@ class _AnimatedTextFieldState extends State<AnimatedTextField> {
                 keyboardType: widget.keyboardType,
                 obscureText: widget.isPasswordField,
                 cursorColor: Colors.blueAccent,
-              
                 style: const TextStyle(
                   fontSize: 16.0,
                   fontWeight: FontWeight.w400,
                   color: Colors.black87,
                 ),
                 decoration: InputDecoration(
-                  
                   labelText: widget.labelText,
                   labelStyle: const TextStyle(
                     color: Styles.primaryColor,
                     fontWeight: FontWeight.w400,
                   ),
-                  hintText:  widget.hintText,
+                  hintText: widget.hintText,
                   hintStyle: TextStyle(
                     color: Colors.grey.shade800,
                     fontWeight: FontWeight.w300,

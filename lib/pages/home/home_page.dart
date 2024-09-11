@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:liana_plant/constants/app_constants.dart';
 import 'package:liana_plant/constants/styles.dart';
 import 'package:liana_plant/pages/home/drawer_menu.dart';
 import 'package:liana_plant/pages/home/map_view.dart';
-import 'package:liana_plant/services/location_service.dart';
 
 import '../../services/language_service.dart';
 
@@ -48,7 +46,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Styles.backgroundColor,
         title: const Text(AppConstants.appTitle),
       ),
-      body: MapView(),
+      body: const MapView(),
     );
   }
 }

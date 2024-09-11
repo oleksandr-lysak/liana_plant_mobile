@@ -19,7 +19,7 @@ class BookingPageState extends State<BookingPage> {
   // Список зайнятих слотів для прикладу (з датою і часом)
   List<Map<String, dynamic>> bookedSlots = [
     {'date': DateTime.now(),'client': 'John Doe', 'service': 'Haircut'},
-    {'date': DateTime.now().add(Duration(hours: 4)), 'client': 'Jane Smith', 'service': 'Manicure'},
+    {'date': DateTime.now().add(const Duration(hours: 4)), 'client': 'Jane Smith', 'service': 'Manicure'},
   ];
 
   List<Map<String, dynamic>> slots = [];
@@ -72,7 +72,7 @@ class BookingPageState extends State<BookingPage> {
           orElse: () => {'client': '', 'service': ''},
         )['service'],
       });
-      startTime = startTime.add(Duration(hours: 1));
+      startTime = startTime.add(const Duration(hours: 1));
     }
 
     setState(() {

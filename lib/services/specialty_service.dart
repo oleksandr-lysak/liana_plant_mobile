@@ -30,7 +30,7 @@ class SpecialtyService {
 
   static Future<Specialty?> getSpecialtyById(int id) async {
     const baseUrl = AppConstants.serverUrl;
-    final url = baseUrl+'specialties/$id'; // Замість URL вкажіть свій API
+    final url = '${baseUrl}specialties/$id'; // Замість URL вкажіть свій API
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {

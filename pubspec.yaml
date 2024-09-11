@@ -50,6 +50,9 @@ dependencies:
   camera: ^0.10.0
   shared_preferences: ^2.0.8
 
+  latlong2: any
+  http: any
+  intl: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -17,7 +17,7 @@ class LocationService {
           desiredAccuracy: LocationAccuracy.high);
       return LatLng(position.latitude, position.longitude);
     } else {
-      return LatLng(50.249198, 30.350024);
+      return const LatLng(50.249198, 30.350024);
     }
   }
 
