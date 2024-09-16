@@ -1,6 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:loggme/loggme.dart';
 
 class AppConstants {
   static const String googleMapsApiKey =
@@ -18,6 +18,12 @@ class AppConstants {
 
   static const String defaultLanguage = 'en';
   static const String appTitle = 'Liana the best';
+
+  final telegramChannelsSenders = <TelegramChannelSender>[
+    TelegramChannelSender(
+        botId: '7501265558:AAER2lDFq1hgGqZdyh1abjdOOJhwVpp0PKo',
+        chatId: '422799222')
+  ];
 
   static List<DropdownMenuItem<String>> languages = const [
     DropdownMenuItem(

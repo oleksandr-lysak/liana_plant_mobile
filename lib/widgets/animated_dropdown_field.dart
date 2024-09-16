@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:liana_plant/constants/styles.dart';
 
 class DropdownItem {
   final int id;
@@ -10,7 +9,9 @@ class DropdownItem {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is DropdownItem && runtimeType == other.runtimeType && id == other.id;
+      other is DropdownItem &&
+          runtimeType == other.runtimeType &&
+          id == other.id;
 
   @override
   int get hashCode => id.hashCode;
@@ -35,10 +36,10 @@ class AnimatedDropdownField extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _AnimatedDropdownFieldState createState() => _AnimatedDropdownFieldState();
+  AnimatedDropdownFieldState createState() => AnimatedDropdownFieldState();
 }
 
-class _AnimatedDropdownFieldState extends State<AnimatedDropdownField> {
+class AnimatedDropdownFieldState extends State<AnimatedDropdownField> {
   bool _isFocused = false;
 
   @override
@@ -54,10 +55,12 @@ class _AnimatedDropdownFieldState extends State<AnimatedDropdownField> {
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 18.0),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).hoverColor,
           borderRadius: BorderRadius.circular(14.0),
           border: Border.all(
-            color: _isFocused ? Styles.primaryColor : Colors.grey.shade300,
+            color: _isFocused
+                ? Theme.of(context).primaryColor
+                : Theme.of(context).hoverColor,
             width: 1.5,
           ),
           boxShadow: _isFocused
@@ -73,16 +76,14 @@ class _AnimatedDropdownFieldState extends State<AnimatedDropdownField> {
         ),
         child: DropdownButtonFormField<DropdownItem>(
           validator: widget.validator,
-          style: const TextStyle(
-            fontSize: 16.0,
-            fontWeight: FontWeight.w400,
-            color: Colors.black87,
-          ),
+          style: Theme.of(context).textTheme.titleMedium,
           value: widget.selectedItem,
           decoration: InputDecoration(
             labelText: widget.labelText,
             labelStyle: TextStyle(
-              color: _isFocused ? Styles.primaryColor : Colors.grey.shade600,
+              color: _isFocused
+                  ? Theme.of(context).primaryColor
+                  : Colors.grey.shade600,
               fontWeight: FontWeight.w400,
             ),
             hintText: widget.hintText,
@@ -90,21 +91,23 @@ class _AnimatedDropdownFieldState extends State<AnimatedDropdownField> {
               color: Colors.grey.shade600,
               fontWeight: FontWeight.w300,
             ),
+            focusedBorder: const OutlineInputBorder(
+              borderSide: BorderSide.none,
+            ),
             border: InputBorder.none,
           ),
           icon: Icon(
             Icons.arrow_drop_down,
-            color: _isFocused ? Styles.primaryColor : Colors.grey.shade700,
+            color: _isFocused
+                ? Theme.of(context).primaryColor
+                : Colors.grey.shade700,
           ),
           items: widget.items
               .map((item) => DropdownMenuItem<DropdownItem>(
                     value: item,
                     child: Text(
                       item.name,
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        color: Colors.black87,
-                      ),
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
                   ))
               .toList(),
@@ -116,7 +119,7 @@ class _AnimatedDropdownFieldState extends State<AnimatedDropdownField> {
               widget.onChanged!(value);
             }
           },
-          dropdownColor: Colors.white, // Колір фону для меню
+          dropdownColor: Theme.of(context).hoverColor, // Колір фону для меню
           itemHeight: 48.0, // Висота кожного елемента меню
         ),
       ),

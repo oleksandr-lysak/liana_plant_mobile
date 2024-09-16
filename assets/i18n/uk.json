@@ -9,6 +9,13 @@
   "pick_photo": "Вибрати фото",
   "submit": "Створити",
   "select_speciality": "Спеціальність",
+  "booking_panel": "Панель бронювання",
+  "selected_date": "Обрана дата",
+  "booked_by": "Заброньовано",
+  "available": "Доступно",
+  "input_details": "Введіть дані",
+  "client_name": "Ім'я клієнта",
+  "duration": "Тривалість",
   "summary_info_page": {
     "photo": "Фото",
     "address": "Адреса",

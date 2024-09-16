@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "866143547897",
+    "project_id": "lianaplant-5dcd8",
+    "storage_bucket": "lianaplant-5dcd8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:866143547897:android:57a2de506be0ce280a8d28",
+        "android_client_info": {
+          "package_name": "com.example.liana_plant"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4fiqyHt8hGIXE_SIyIXrFXbzSks9xyZY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -5,7 +5,9 @@ import 'package:liana_plant/widgets/animated_text_field.dart';
 import 'package:liana_plant/widgets/loading.dart';
 import 'package:provider/provider.dart'; // Додати імпорт для провайдера
 import 'package:liana_plant/providers/specialty_provider.dart'; // Імпорт для провайдера спеціальностей
-import 'package:latlong2/latlong.dart'as latlong; // Імпорт для роботи з геолокацією
+import 'package:latlong2/latlong.dart' as latlong;
+
+import '../../providers/theme_provider.dart'; // Імпорт для роботи з геолокацією
 
 class MasterCreationPage extends StatefulWidget {
   const MasterCreationPage({super.key});
@@ -43,8 +45,8 @@ class MasterCreationPageState extends State<MasterCreationPage> {
   Widget build(BuildContext context) {
     // Отримання провайдера
     final specialtyProvider = Provider.of<SpecialtyProvider>(context);
-    _selectedLocation = ModalRoute.of(context)?.settings.arguments as latlong.LatLng;
-
+    _selectedLocation =
+        ModalRoute.of(context)?.settings.arguments as latlong.LatLng;
 
     if (specialtyProvider.isLoading) {
       return Scaffold(
@@ -67,6 +69,12 @@ class MasterCreationPageState extends State<MasterCreationPage> {
         title: Text(FlutterI18n.translate(context, 'create_master')),
         actions: [
           IconButton(
+            icon: const Icon(Icons.brightness_6),
+            onPressed: () {
+              Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.navigate_next),
             onPressed: () {
               if (_formKey.currentState!.validate()) {
@@ -86,7 +94,7 @@ class MasterCreationPageState extends State<MasterCreationPage> {
           ),
         ],
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -129,7 +137,6 @@ class MasterCreationPageState extends State<MasterCreationPage> {
                     .map((specialty) =>
                         DropdownItem(id: specialty.id, name: specialty.name))
                     .toList(),
-                    
                 selectedItem: selectedItem,
                 validator: (value) => value?.id.isNaN ?? true
                     ? FlutterI18n.translate(context, 'required')

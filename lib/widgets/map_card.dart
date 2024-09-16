@@ -26,7 +26,7 @@ class MapCard extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        color: Styles.backgroundColor,
+        color: Theme.of(context).scaffoldBackgroundColor,
         child: Row(
           children: [
             const SizedBox(width: 5),
@@ -36,28 +36,22 @@ class MapCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    height: 20,
-                    child: ListView.builder(
-                      padding: EdgeInsets.zero,
-                      scrollDirection: Axis.horizontal,
-                      itemCount: (item?.rating?.toInt() ?? 0),
-                      itemBuilder: (BuildContext context, int index) {
-                        return const Icon(
-                          Icons.star,
-                          color: Styles.primaryColor,
-                        );
-                      },
-                    ),
+                  Row(
+                    children: List.generate(5, (index) {
+                      return Icon(
+                        index < (item?.rating?.toInt() ?? 0)
+                            ? Icons.star
+                            : Icons.star_border,
+                        color: index < (item?.rating?.toInt() ?? 0)
+                            ? Theme.of(context).primaryColor
+                            : Theme.of(context).hoverColor,
+                      );
+                    }),
                   ),
                   const SizedBox(height: 5),
                   Text(
                     item?.title ?? '',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Styles.titleColor,
-                    ),
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 5),
                   Text(
@@ -78,9 +72,9 @@ class MapCard extends StatelessWidget {
                   const SizedBox(height: 5),
                   Text(
                     item!.phone.toString(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
-                      color: Styles.primaryColor,
+                      color: Theme.of(context).focusColor,
                     ),
                   ),
                 ],

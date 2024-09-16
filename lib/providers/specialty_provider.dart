@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:liana_plant/models/specialty.dart';
-import 'package:liana_plant/services/specialty_service.dart';
+import 'package:liana_plant/services/api_services/specialty_service.dart';
 
 class SpecialtyProvider with ChangeNotifier {
   final SpecialtyService _service;
@@ -17,7 +17,7 @@ class SpecialtyProvider with ChangeNotifier {
   Future<void> loadSpecialties() async {
     _isLoading = true;
     notifyListeners();
-    
+
     try {
       _specialties = await _service.fetchSpecialties();
     } catch (e) {

@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 
 import 'package:dio/dio.dart';
 import 'package:liana_plant/constants/app_constants.dart';
+import 'package:liana_plant/services/language_service.dart';
 
 class MapMarker {
   final String? image;
@@ -32,7 +33,7 @@ class MapMarker {
       title: json['name'] as String,
       address: json['address'] as String,
       description: json['description'] as String,
-      location: LatLng(lng, lat),
+      location: LatLng(lat, lng),
       rating: double.parse(json['rating'].toString()),
       phone: json['phone'] as String,
     );
@@ -44,17 +45,18 @@ Dio dio = Dio();
 
 bool error = false; //for error status
 String errMsg = ""; //to assing any error message from API/runtime
-var apiData; //for decoded JSON data
+late Map<String, dynamic> apiData; //for decoded JSON data
 
 Future<List<MapMarker>> getData(
     double longitude, double latitude, double zoom) async {
   if (defaultTargetPlatform == TargetPlatform.android ||
       defaultTargetPlatform == TargetPlatform.iOS) {
-    LocationPermission permission = await Geolocator.checkPermission();
+    await Geolocator.checkPermission();
   }
   String serverUrl = AppConstants.serverUrl;
+  final String locale = await LanguageService.getLanguage() ?? 'en';
   String url =
-      '${serverUrl}masters?lng=$longitude&lat=$latitude&zoom=$zoom&page=1';
+      '${serverUrl}masters?lng=$longitude&lat=$latitude&zoom=$zoom&page=1&locale=$locale';
 
   Response response = await dio.get(url);
   apiData = response.data; //get JSON decoded data from response

@@ -1,66 +1,152 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:liana_plant/constants/app_constants.dart';
-import 'package:liana_plant/constants/styles.dart';
 import 'package:liana_plant/pages/booking/booking_page.dart';
 import 'package:liana_plant/pages/create_master/summary_info_page.dart';
 import 'package:liana_plant/pages/home/home_page.dart';
 import 'package:liana_plant/pages/create_master/map_picker_page.dart';
 import 'package:liana_plant/pages/create_master/master_creation_page.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
+import 'package:liana_plant/pages/settings/settings_page.dart';
 import 'package:liana_plant/providers/specialty_provider.dart';
+import 'package:liana_plant/providers/theme_provider.dart';
 import 'package:liana_plant/services/language_service.dart';
-import 'package:liana_plant/services/specialty_service.dart';
+import 'package:liana_plant/services/log_service.dart';
+import 'package:liana_plant/services/api_services/specialty_service.dart';
+import 'package:liana_plant/services/token_service.dart';
 import 'package:liana_plant/widgets/photo_grid_page.dart';
 import 'package:provider/provider.dart';
-
+import 'package:intl/date_symbol_data_local.dart';
 import 'classes/app_scroll_behavior.dart';
+import 'classes/app_themes.dart';
+import 'firebase_options.dart';
 
 void main() async {
+  FlutterError.onError = (FlutterErrorDetails details) {
+    if (kReleaseMode) {
+      LogService.log('FlutterError: ${details.exception.toString()}');
+      LogService.log('Stack trace: ${details.stack.toString()}');
+    } else {
+      LogService.log(details.toString());
+    }
+  };
+
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting();
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   String serverUrl = AppConstants.serverUrl;
   final specialtyService = SpecialtyService('${serverUrl}specialties');
   String? savedLanguage = await LanguageService.getLanguage();
+  final tokenService = TokenService();
+  final token = await tokenService.getToken();
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => SpecialtyProvider(specialtyService),
-      child: MyApp(savedLanguage: savedLanguage),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => SpecialtyProvider(specialtyService),
+        ),
+        Provider<TokenService>(
+          create: (context) => TokenService(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) =>
+              ThemeProvider(AppThemes.lightTheme), // Додано ThemeProvider
+        ),
+      ],
+      child: MyApp(savedLanguage: savedLanguage, token: token),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   final String? savedLanguage;
+  final String? token;
 
-  const MyApp({Key? key, this.savedLanguage}) : super(key: key);
+  const MyApp({Key? key, this.savedLanguage, this.token}) : super(key: key);
+
+  @override
+  MyAppState createState() => MyAppState();
+}
+
+class MyAppState extends State<MyApp> {
+  int _selectedIndex = 0;
+
+  // Список сторінок для навігації
+  List<Widget> pages = [
+    const HomePage(),
+    const SettingsPage(),
+  ];
+
+  Widget _getHomePage() {
+    bool isLoggedIn = widget.token != null && widget.token!.isNotEmpty;
+    if (isLoggedIn) {
+      return const BookingPage(); // Якщо користувач авторизований, відкривається BookingPage
+    } else {
+      return const HomePage(); // Якщо не авторизований, відкривається HomePage
+    }
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      scrollBehavior: AppScrollBehavior(),
-      themeMode: ThemeMode.dark,
-      darkTheme: ThemeData(
-        colorScheme: const ColorScheme.dark(primary: Styles.primaryColor),
-        brightness: Brightness.dark,
-      ),
-      home: const HomePage(),
-      localizationsDelegates: [
-        FlutterI18nDelegate(
-          translationLoader: FileTranslationLoader(
-            basePath: 'assets/i18n',
-            fallbackFile: AppConstants.defaultLanguage,
-            forcedLocale: savedLanguage != null ? Locale(savedLanguage!) : null,
+    return Consumer<ThemeProvider>(builder: (context, themeProvider, child) {
+      return MaterialApp(
+        scrollBehavior: AppScrollBehavior(),
+        theme: themeProvider.themeData,
+        localizationsDelegates: [
+          FlutterI18nDelegate(
+            translationLoader: FileTranslationLoader(
+              basePath: 'assets/i18n',
+              fallbackFile: AppConstants.defaultLanguage,
+              forcedLocale: widget.savedLanguage != null
+                  ? Locale(widget.savedLanguage!)
+                  : null,
+            ),
+            missingTranslationHandler: (key, locale) {},
           ),
-          missingTranslationHandler: (key, locale) {},
+        ],
+        home: Scaffold(
+          body: _selectedIndex == 0
+              ? _getHomePage() // Виклик умовного віджету на головній сторінці
+              : pages[_selectedIndex], // Інші сторінки не змінюються
+          bottomNavigationBar: BottomNavigationBar(
+            items: const <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.settings),
+                label: 'Settings',
+              ),
+            ],
+            currentIndex: _selectedIndex,
+            selectedItemColor: const Color.fromRGBO(184, 255, 91, 1),
+            unselectedItemColor:
+                Theme.of(context).colorScheme.onSurface.withOpacity(1),
+            onTap: _onItemTapped, // Зміна сторінки при виборі елемента
+          ),
         ),
-      ],
-      routes: {
-        '/create-master': (context) => const MasterCreationPage(),
-        '/map-picker': (context) => const MapPickerPage(),
-        '/photo-grid': (context) => const PhotoGridPage(),
-        '/choose-photo': (context) => const PhotoGridPage(),
-        '/booking-page': (context) => const BookingPage(),
-        '/summary-info': (context) => const SummaryInfoPage(),
-      },
-    );
+        routes: {
+          '/create-master': (context) => const MasterCreationPage(),
+          '/map-picker': (context) => const MapPickerPage(),
+          '/photo-grid': (context) => const PhotoGridPage(),
+          '/choose-photo': (context) => const PhotoGridPage(),
+          '/booking-page': (context) => const BookingPage(),
+          '/summary-info': (context) => const SummaryInfoPage(),
+          '/home-page': (context) => const HomePage(),
+          '/settings-page': (context) => const HomePage(),
+        },
+      );
+    });
   }
 }

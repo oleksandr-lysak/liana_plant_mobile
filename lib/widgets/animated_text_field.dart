@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:liana_plant/constants/styles.dart';
 
 class AnimatedTextField extends StatefulWidget {
   final TextEditingController controller;
@@ -41,16 +40,18 @@ class AnimatedTextFieldState extends State<AnimatedTextField> {
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 18.0),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).hoverColor,
           borderRadius: BorderRadius.circular(14.0),
           border: Border.all(
-            color: _isFocused ? Styles.primaryColor : Colors.grey.shade300,
+            color: _isFocused
+                ? Theme.of(context).primaryColor
+                : Theme.of(context).hoverColor,
             width: 1.5,
           ),
           boxShadow: _isFocused
               ? [
                   BoxShadow(
-                    color: Colors.blueAccent.withOpacity(0.15),
+                    color: Colors.white.withOpacity(0.20),
                     blurRadius: 12,
                     spreadRadius: 2,
                     offset: const Offset(0, 4),
@@ -66,19 +67,21 @@ class AnimatedTextFieldState extends State<AnimatedTextField> {
                 controller: widget.controller,
                 keyboardType: widget.keyboardType,
                 obscureText: widget.isPasswordField,
-                cursorColor: Colors.blueAccent,
-                style: const TextStyle(
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.black87,
-                ),
+                cursorColor: Theme.of(context).primaryColor,
+                style: Theme.of(context).textTheme.titleMedium,
                 decoration: InputDecoration(
                   labelText: widget.labelText,
-                  labelStyle: const TextStyle(
-                    color: Styles.primaryColor,
+                  labelStyle: TextStyle(
+                    color: Theme.of(context).primaryColor,
                     fontWeight: FontWeight.w400,
                   ),
                   hintText: widget.hintText,
+                  focusedBorder: const OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: const OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                  ),
                   hintStyle: TextStyle(
                     color: Colors.grey.shade800,
                     fontWeight: FontWeight.w300,
@@ -90,7 +93,7 @@ class AnimatedTextFieldState extends State<AnimatedTextField> {
             ),
             if (widget.controller.text.isNotEmpty)
               IconButton(
-                icon: Icon(Icons.clear, color: Colors.grey.shade700),
+                icon: const Icon(Icons.clear, color: Colors.white),
                 onPressed: () {
                   widget.controller.clear();
                   setState(() {});

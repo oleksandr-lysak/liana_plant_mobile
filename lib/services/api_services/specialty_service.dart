@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:liana_plant/constants/app_constants.dart';
 import 'package:liana_plant/models/specialty.dart';
+import 'package:liana_plant/services/language_service.dart';
 import 'package:liana_plant/services/log_service.dart';
 
 class SpecialtyService {
@@ -11,7 +12,8 @@ class SpecialtyService {
 
   Future<List<Specialty>> fetchSpecialties() async {
     try {
-      final response = await http.get(Uri.parse(apiUrl));
+      final String locale = await LanguageService.getLanguage() ?? 'en';
+      final response = await http.get(Uri.parse('$apiUrl?locale=$locale'));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
@@ -30,7 +32,8 @@ class SpecialtyService {
 
   static Future<Specialty?> getSpecialtyById(int id) async {
     const baseUrl = AppConstants.serverUrl;
-    final url = '${baseUrl}specialties/$id'; // Замість URL вкажіть свій API
+    final String locale = await LanguageService.getLanguage() ?? 'en';
+    final url = '${baseUrl}specialties/$id?locale=$locale';
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {

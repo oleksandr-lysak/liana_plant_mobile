@@ -9,6 +9,10 @@
   "pick_photo": "Pick Photo",
   "submit": "Submit",
   "select_speciality": "Speciality",
+  "booking_panel": "Booking Panel",
+  "selected_date": "Selected Date",
+  "booked_by": "Booked by",
+  "available": "Available",
   "summary_info_page": {
     "photo": "Photo",
     "address": "Address",
