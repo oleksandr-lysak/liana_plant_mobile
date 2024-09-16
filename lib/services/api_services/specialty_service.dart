@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:liana_plant/constants/app_constants.dart';
 import 'package:liana_plant/models/specialty.dart';
+import 'package:liana_plant/services/log_service.dart';
 
 class SpecialtyService {
   final String apiUrl;
@@ -14,8 +15,7 @@ class SpecialtyService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
-        final List<dynamic> specialtiesJson =
-            data['data'];
+        final List<dynamic> specialtiesJson = data['data'];
         return specialtiesJson.map((json) {
           Specialty specialty = Specialty.fromJson(json);
           return specialty;
@@ -38,7 +38,7 @@ class SpecialtyService {
         return Specialty.fromJson(data['data']);
       }
     } catch (e) {
-      print('Error fetching specialty: $e');
+      LogService.log('Error fetching specialty: $e');
     }
     return null;
   }
