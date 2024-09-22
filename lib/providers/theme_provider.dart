@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liana_plant/constants/app_constants.dart';
 
 import '../classes/app_themes.dart';
 
@@ -12,8 +13,10 @@ class ThemeProvider with ChangeNotifier {
   void toggleTheme() {
     if (_themeData == AppThemes.lightTheme) {
       _themeData = AppThemes.darkTheme;
+      AppConstants().mapBoxStyleId = AppConstants.mapBoxStyleIdDark;
     } else {
       _themeData = AppThemes.lightTheme;
+      AppConstants().mapBoxStyleId = AppConstants.mapBoxStyleIdLight;
     }
     notifyListeners();
   }

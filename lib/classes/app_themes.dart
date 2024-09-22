@@ -1,61 +1,69 @@
 import 'package:flutter/material.dart';
 
 class AppThemes {
+  static Color mainColorDark = const Color.fromRGBO(184, 255, 91, 1);
+  static Color mainColorLight = const Color.fromARGB(255, 85, 133, 255);
   static final ThemeData darkTheme = ThemeData(
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: Color.fromRGBO(184, 255, 91, 1),
+      selectedItemColor: Colors.black,
+      unselectedItemColor: Colors.black54,
+    ),
     brightness: Brightness.dark,
-    primaryColor: const Color.fromRGBO(184, 255, 91, 1),
+    primaryColor: mainColorDark,
     indicatorColor: const Color.fromRGBO(184, 255, 91, 1),
     scaffoldBackgroundColor: const Color(0xFF121212),
-    focusColor: const Color.fromRGBO(184, 255, 91, 1), // Підбираємо для фокусу
+    focusColor: mainColorDark, // Підбираємо для фокусу
     hoverColor: const Color(0xFF424242), // Підбираємо для ховера
+    shadowColor: const Color.fromARGB(255, 248, 248, 248).withOpacity(0.2),
 
     appBarTheme: const AppBarTheme(
       backgroundColor: Color(0xFF333333), // Темний фон для AppBar
       titleTextStyle: TextStyle(
-        color: Colors.white,
+        color: Colors.black,
         fontSize: 20,
         fontWeight: FontWeight.bold,
       ),
       iconTheme: IconThemeData(color: Colors.white),
     ),
-    textTheme: const TextTheme(
-      headlineLarge: TextStyle(
+    textTheme: TextTheme(
+      headlineLarge: const TextStyle(
         color: Colors.white70, // Світлий відтінок для заголовків
         fontSize: 26,
         fontWeight: FontWeight.bold,
       ),
-      titleLarge: TextStyle(
+      titleLarge: const TextStyle(
         color: Colors.white60,
         fontSize: 22,
         fontWeight: FontWeight.w600,
       ),
-      titleMedium: TextStyle(
+      titleMedium: const TextStyle(
         color: Colors.white60,
         fontSize: 18,
         fontWeight: FontWeight.w500,
       ),
-      titleSmall: TextStyle(
+      titleSmall: const TextStyle(
         color: Colors.white60,
         fontSize: 14,
         fontWeight: FontWeight.w400,
       ),
-      bodyMedium: TextStyle(
+      bodyMedium: const TextStyle(
         color: Colors.white54,
         fontSize: 16,
         fontWeight: FontWeight.normal,
       ),
-      labelLarge: TextStyle(
+      labelLarge: const TextStyle(
         color: Colors.black87,
         fontSize: 20,
         fontWeight: FontWeight.w600,
       ),
       labelMedium: TextStyle(
-        color: Color.fromRGBO(184, 255, 91, 1),
+        color: mainColorDark,
         fontSize: 18,
         fontWeight: FontWeight.w500,
       ),
       labelSmall: TextStyle(
-        color: Color.fromRGBO(184, 255, 91, 1),
+        color: mainColorDark,
         fontSize: 16,
         fontWeight: FontWeight.w400,
       ),
@@ -96,14 +104,21 @@ class AppThemes {
 
   // Темна тема
   static final ThemeData lightTheme = ThemeData(
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      backgroundColor:
+          mainColorLight, // Колір фону для світлої теми
+      selectedItemColor: Colors.black,
+      unselectedItemColor: Colors.black54,
+    ),
     brightness: Brightness.light,
     indicatorColor: Colors.black,
-    primaryColor: const Color.fromRGBO(155, 183, 255, 1),
+    primaryColor: mainColorLight,
     scaffoldBackgroundColor:
         const Color(0xFFFFFFFF), // Білий фон для світлої теми
     focusColor:
-        const Color.fromRGBO(81, 135, 255, 1.0), // Підбираємо для фокусу
-    hoverColor: Colors.grey[300],
+        mainColorLight, // Підбираємо для фокусу
+    hoverColor: const Color.fromARGB(255, 235, 234, 234),
+    shadowColor: const Color.fromARGB(255, 3, 3, 3).withOpacity(0.2),
     appBarTheme: const AppBarTheme(
       backgroundColor: Color(0xFFDDDDDD), // Світлий фон для AppBar
       titleTextStyle: TextStyle(
@@ -113,44 +128,44 @@ class AppThemes {
       ),
       iconTheme: IconThemeData(color: Colors.black),
     ),
-    textTheme: const TextTheme(
-      headlineLarge: TextStyle(
+    textTheme:  TextTheme(
+      headlineLarge: const TextStyle(
         color: Colors.black87, // Темний відтінок для заголовків
         fontSize: 26,
         fontWeight: FontWeight.bold,
       ),
-      titleLarge: TextStyle(
+      titleLarge: const TextStyle(
         color: Colors.black,
         fontSize: 22,
         fontWeight: FontWeight.w600,
       ),
-      titleMedium: TextStyle(
+      titleMedium: const TextStyle(
         color: Colors.black,
         fontSize: 18,
         fontWeight: FontWeight.w500,
       ),
-      titleSmall: TextStyle(
+      titleSmall: const TextStyle(
         color: Colors.black,
         fontSize: 16,
         fontWeight: FontWeight.w400,
       ),
-      bodyMedium: TextStyle(
+      bodyMedium: const TextStyle(
         color: Colors.grey,
         fontSize: 16,
         fontWeight: FontWeight.normal,
       ),
-      labelLarge: TextStyle(
+      labelLarge: const TextStyle(
         color: Colors.black, // Колір акценту
         fontSize: 20,
         fontWeight: FontWeight.w600,
       ),
       labelMedium: TextStyle(
-        color: Color.fromRGBO(155, 183, 255, 1),
+        color: mainColorLight,
         fontSize: 18,
         fontWeight: FontWeight.w500,
       ),
       labelSmall: TextStyle(
-        color: Color.fromRGBO(155, 183, 255, 1),
+        color: mainColorLight,
         fontSize: 16,
         fontWeight: FontWeight.w400,
       ),
@@ -169,21 +184,22 @@ class AppThemes {
       ),
     ),
     buttonTheme: ButtonThemeData(
-      buttonColor: const Color.fromRGBO(155, 183, 255, 1), // Колір кнопок
+      buttonColor: mainColorLight, // Колір кнопок
       textTheme: ButtonTextTheme.primary,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8.0),
       ),
     ),
     checkboxTheme: CheckboxThemeData(
-      fillColor: WidgetStateProperty.all(const Color.fromRGBO(155, 183, 255, 1)),
+      fillColor:
+          WidgetStateProperty.all(mainColorLight),
       checkColor: WidgetStateProperty.all(Colors.black),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(4.0),
       ),
     ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: Color.fromRGBO(155, 183, 255, 1),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: mainColorLight,
       foregroundColor: Colors.black,
     ),
   );

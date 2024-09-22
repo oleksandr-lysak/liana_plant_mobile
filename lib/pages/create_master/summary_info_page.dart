@@ -131,8 +131,8 @@ class SummaryInfoPageState extends State<SummaryInfoPage>
             ],
             title:
                 Text(FlutterI18n.translate(context, 'summary_info_page.title')),
-            backgroundColor: Theme.of(context).hoverColor,
-            elevation: 0,
+            backgroundColor: Theme.of(context).primaryColor,
+            elevation: 8,
             shadowColor: Colors.transparent,
           ),
           body: FadeTransition(

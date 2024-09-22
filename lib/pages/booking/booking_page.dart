@@ -7,6 +7,7 @@ import 'package:liana_plant/widgets/animated_text_field.dart';
 import 'package:liana_plant/widgets/loading.dart';
 import 'package:provider/provider.dart';
 
+import '../../models/slot.dart';
 import '../../providers/theme_provider.dart';
 import '../../services/api_services/slot_service.dart';
 import '../../services/fcm_service.dart';
@@ -30,7 +31,7 @@ class BookingPageState extends State<BookingPage> {
   bool isTokenPresent = false;
 
   // Список зайнятих слотів для прикладу (з датою і часом)
-  List<Map<String, dynamic>> bookedSlots = [];
+  List<Slot> bookedSlots = [];
   // List<Map<String, dynamic>> bookedSlots = [
   //   {'date': DateTime.now(), 'client': 'John Doe', 'service': 'Haircut'},
   //   {
@@ -40,7 +41,7 @@ class BookingPageState extends State<BookingPage> {
   //   },
   // ];
 
-  List<Map<String, dynamic>> slots = [];
+  List<Slot> slots = [];
 
   @override
   void initState() {
@@ -77,17 +78,7 @@ class BookingPageState extends State<BookingPage> {
       final slotService = SlotService();
       final fetchedSlots = await slotService.getSlots(selectedDate);
       setState(() {
-        slots = fetchedSlots
-            .map((slot) => {
-                  'date': DateTime.parse(slot['date']),
-                  'time': slot['time'],
-                  'datetime': DateTime.parse(slot['datetime']),
-                  'isBooked': slot['isBooked'],
-                  'client': slot['client'],
-                  'service': slot['service'],
-                  'source': slot['source'],
-                })
-            .toList();
+        bookedSlots = fetchedSlots;
       });
     } catch (e) {
       LogService.log('Error fetching time slots: $e');
@@ -127,26 +118,55 @@ class BookingPageState extends State<BookingPage> {
     DateTime endTime = DateTime(
         selectedDate.year, selectedDate.month, selectedDate.day, 20, 0);
 
-    List<Map<String, dynamic>> newSlots = [];
-    while (startTime.isBefore(endTime)) {
-      String formattedTime = DateFormat.jm(locale).format(startTime);
+    List<Slot> newSlots = [];
 
-      newSlots.add({
-        'date': startTime,
-        'time': formattedTime,
-        'datetime': startTime,
-        'isBooked':
-            bookedSlots.any((slot) => _isSameSlot(slot['date'], startTime)),
-        'client': bookedSlots.firstWhere(
-          (slot) => _isSameSlot(slot['date'], startTime),
-          orElse: () => {'client': '', 'service': ''},
-        )['client'],
-        'service': bookedSlots.firstWhere(
-          (slot) => _isSameSlot(slot['date'], startTime),
-          orElse: () => {'client': '', 'service': ''},
-        )['service'],
-      });
-      startTime = startTime.add(const Duration(hours: 1));
+    while (startTime.isBefore(endTime)) {
+      var bookedSlot = bookedSlots.firstWhere(
+        (slot) => _isSameSlot(slot.date, startTime),
+        orElse: () => Slot(
+          id: 0,
+          date: startTime,
+          isBooked: false,
+          duration: const Duration(minutes: 30), // Тривалість 30 хв
+        ),
+      );
+
+      if (bookedSlot.id != 0) {
+        // Додаємо слот перед заброньованим
+        if (startTime != bookedSlot.date) {
+          newSlots.add(Slot(
+            id: 0,
+            date: startTime,
+            isBooked: false,
+            duration: const Duration(minutes: 30), // Тривалість 30 хв
+          ));
+        }
+
+        // Додаємо заброньований слот
+        newSlots.add(Slot(
+          id: bookedSlot.id,
+          date: bookedSlot.date,
+          isBooked: true,
+          clientName: bookedSlot.clientName,
+          source: bookedSlot.source,
+          duration: bookedSlot.duration,
+          clientPhone: bookedSlot.clientPhone,
+          service: bookedSlot.service,
+        ));
+
+        // Пересуваємо startTime до кінця заброньованого слота
+        startTime = bookedSlot.date.add(bookedSlot.duration);
+      } else {
+        // Якщо слот не заброньований, додаємо стандартний слот
+        newSlots.add(Slot(
+          id: 0,
+          date: startTime,
+          isBooked: false,
+          duration: const Duration(
+              hours: 1), // Стандартна тривалість для вільних слотів
+        ));
+        startTime = startTime.add(const Duration(hours: 1));
+      }
     }
 
     setState(() {
@@ -165,7 +185,7 @@ class BookingPageState extends State<BookingPage> {
     Duration? duration = await showDialog(
       context: context,
       builder: (BuildContext context) {
-        Duration? initialDuration = slots[index]['duration'];
+        Duration? initialDuration = slots[index].duration;
         return AlertDialog(
           backgroundColor: Theme.of(context).colorScheme.surface,
           title: Text(FlutterI18n.translate(context, 'input_details')),
@@ -204,17 +224,63 @@ class BookingPageState extends State<BookingPage> {
   }
 
   void _updateSlotDuration(int index, Duration newDuration) {
-    DateTime startTime = slots[index]['datetime'];
+    DateTime startTime = slots[index].date;
     DateTime endTime = startTime.add(newDuration);
     DateTime nextSlotTime = endTime;
 
-    slots[index]['duration'] = newDuration;
+    slots[index].duration = newDuration;
 
     for (int i = index + 1; i < slots.length; i++) {
-      slots[i]['datetime'] = nextSlotTime;
-      nextSlotTime =
-          nextSlotTime.add(slots[i]['duration'] ?? const Duration(hours: 1));
+      slots[i].date = nextSlotTime;
+      nextSlotTime = nextSlotTime.add(slots[i].duration);
     }
+  }
+
+  // Розрахунок відстані від початку списку до поточного часу
+  double _calculateCurrentTimeOffset(
+      List<Slot> slots, DateTime currentTime, double hourHeight) {
+    double offset = 0.0;
+
+    for (Slot slot in slots) {
+      DateTime slotStart = slot.date;
+      DateTime slotEnd = slotStart.add(slot.duration);
+
+      if (currentTime.isAfter(slotStart) && currentTime.isBefore(slotEnd)) {
+        double minutesIntoSlot =
+            currentTime.difference(slotStart).inMinutes.toDouble();
+        double slotHeight = hourHeight * (slot.duration.inMinutes / 60);
+        offset += slotHeight * (minutesIntoSlot / slot.duration.inMinutes);
+        break;
+      } else {
+        offset += hourHeight * (slot.duration.inMinutes / 60);
+      }
+    }
+
+    return offset / 2;
+  }
+
+// Побудова віджета для лінії поточного часу
+  Widget _buildCurrentTimeLine(DateTime currentTime) {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            height: 2.0,
+            color: Colors.red,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: Text(
+            DateFormat.jm(locale).format(currentTime),
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.red,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -224,12 +290,21 @@ class BookingPageState extends State<BookingPage> {
         child: Loading(),
       );
     } else {
+      double hourHeight = 80.0; // Висота одного годинного слоту
+      DateTime currentTime = DateTime.now();
+      double currentTimeOffset =
+          _calculateCurrentTimeOffset(slots, currentTime, hourHeight);
+
       return Scaffold(
         appBar: AppBar(
-          title: Text(FlutterI18n.translate(context, 'booking_panel')),
+          backgroundColor: Theme.of(context).primaryColor,
+          title: Text(
+            FlutterI18n.translate(context, 'booking_panel'),
+            style: Theme.of(context).appBarTheme.titleTextStyle,
+          ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.brightness_6),
+              icon: const Icon(Icons.brightness_6, color: Colors.black),
               onPressed: () {
                 Provider.of<ThemeProvider>(context, listen: false)
                     .toggleTheme();
@@ -248,7 +323,7 @@ class BookingPageState extends State<BookingPage> {
               ),
               const SizedBox(height: 20),
               SizedBox(
-                height: 80,
+                height: 95,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   controller: _scrollController,
@@ -258,7 +333,7 @@ class BookingPageState extends State<BookingPage> {
                     bool isSelected = selectedDayIndex == index;
 
                     return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      padding: const EdgeInsets.only(bottom: 15,left: 8, right: 8),
                       child: GestureDetector(
                         onTap: () {
                           setState(() {
@@ -271,6 +346,13 @@ class BookingPageState extends State<BookingPage> {
                           duration: const Duration(milliseconds: 300),
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
+                            boxShadow: [
+                                  BoxShadow(
+                                    color: Theme.of(context).shadowColor,
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 5),
+                                  ),
+                                ],
                             color: isSelected
                                 ? Theme.of(context).primaryColor
                                 : Theme.of(context).hoverColor,
@@ -320,82 +402,126 @@ class BookingPageState extends State<BookingPage> {
                       child: child,
                     );
                   },
-                  child: ListView.builder(
-                    key: ValueKey(selectedDate),
-                    itemCount: slots.length,
-                    itemBuilder: (context, index) {
-                      DateTime startTime = slots[index]['datetime'];
-                      Duration duration =
-                          slots[index]['duration'] ?? const Duration(hours: 1);
+                  child: Stack(
+                    children: [
+                      ListView.builder(
+                        key: ValueKey(selectedDate),
+                        itemCount: slots.length + 1,
+                        itemBuilder: (context, index) {
+                          
+                          if (index == slots.length) {
+                            // Відображення лінії поточного часу
+                            return _buildCurrentTimeLine(currentTime);
+                          }
+                          DateTime startTime = slots[index].date;
+                          Duration duration = slots[index].duration;
 
-                      return GestureDetector(
-                        onTap: slots[index]['isBooked']
-                            ? null
-                            : () {
-                                _showDurationDialog(index);
-                              },
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(
-                              vertical: 8.0, horizontal: 16.0),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: slots[index]['isBooked']
-                                ? // Стиль для заброньованого слоту
-                                Theme.of(context).primaryColor.withOpacity(0.1)
-                                : Theme.of(context)
-                                    .hoverColor, // Стиль для доступного слоту
-                            borderRadius:
-                                BorderRadius.circular(12), // Закруглення кутів
-                            border: Border.all(
-                              color: slots[index]['isBooked']
-                                  ? Theme.of(context)
-                                      .primaryColor // Колір рамки для заброньованого слоту
-                                  : Theme.of(context)
-                                      .hoverColor, // Колір рамки для доступного слоту
-                              width: 2.0,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '${DateFormat.jm(locale).format(startTime)} - ${DateFormat.jm(locale).format(startTime.add(duration))}',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface,
-                                    ),
+                          // Розрахунок висоти контейнера
+                          double slotHeight =
+                              hourHeight * (duration.inMinutes / 60);
+
+                          return GestureDetector(
+                            onTap: slots[index].isBooked
+                                ? null
+                                : () {
+                                    _showDurationDialog(index);
+                                  },
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(
+                                  vertical: 8.0, horizontal: 16.0),
+                              padding: const EdgeInsets.only(
+                                  left: 16.0,
+                                  right: 16.0,
+                                  top: 0.0,
+                                  bottom: 0.0),
+                              height: slotHeight,
+                              decoration: BoxDecoration(
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Theme.of(context).shadowColor,
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 5),
                                   ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    slots[index]['isBooked']
-                                        ? '${FlutterI18n.translate(context, 'booked_by')}: ${slots[index]['client']}, ${slots[index]['service']}'
-                                        : FlutterI18n.translate(
-                                            context, 'available'),
-                                    style:
-                                        Theme.of(context).textTheme.titleSmall,
+                                ],
+                                color: slots[index].isBooked
+                                    ? Theme.of(context)
+                                        .primaryColor
+                                        .withOpacity(0.1)
+                                    : Theme.of(context).hoverColor,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: slots[index].isBooked
+                                      ? Theme.of(context).primaryColor
+                                      : Theme.of(context).hoverColor,
+                                  width: 2.0,
+                                ),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        '${DateFormat.jm(locale).format(startTime)} - ${DateFormat.jm(locale).format(startTime.add(duration))}',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      slots[index].isBooked
+                                          ? Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  '${FlutterI18n.translate(context, 'booked_by')}: ${slots[index].clientName}',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .titleSmall,
+                                                ),
+                                                Text(
+                                                  FlutterI18n.translate(context,
+                                                      '${slots[index].service?.name}'),
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .titleSmall,
+                                                ),
+                                              ],
+                                            )
+                                          : const SizedBox(),
+                                    ],
+                                  ),
+                                  Icon(
+                                    slots[index].isBooked
+                                        ? Icons.timelapse
+                                        : Icons.event_available,
+                                    color: slots[index].isBooked
+                                        ? Theme.of(context).focusColor
+                                        : Theme.of(context).focusColor,
                                   ),
                                 ],
                               ),
-                              Icon(
-                                slots[index]['isBooked']
-                                    ? Icons.lock
-                                    : Icons.event_available,
-                                color: slots[index]['isBooked']
-                                    ? Colors.grey
-                                    : Theme.of(context)
-                                        .focusColor, // Іконка залежно від стану слоту
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                            ),
+                          );
+                        },
+                      ),
+                      // Positioned(
+                      //   top:
+                      //       currentTimeOffset, // Позиція лінії від початку списку
+                      //   left: 16.0, // Відступ зліва
+                      //   right: 16.0, // Відступ справа
+                      //   child: _buildCurrentTimeLine(currentTime),
+                      // ),
+                    ],
                   ),
                 ),
               ),

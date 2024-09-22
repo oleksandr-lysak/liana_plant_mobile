@@ -67,15 +67,16 @@ class MasterCreationPageState extends State<MasterCreationPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(FlutterI18n.translate(context, 'create_master')),
+        backgroundColor: Theme.of(context).primaryColor,
         actions: [
           IconButton(
-            icon: const Icon(Icons.brightness_6),
+            icon: const Icon(Icons.brightness_6, color: Colors.black,),
             onPressed: () {
               Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
             },
           ),
           IconButton(
-            icon: const Icon(Icons.navigate_next),
+            icon: const Icon(Icons.navigate_next, color: Colors.black),
             onPressed: () {
               if (_formKey.currentState!.validate()) {
                 Navigator.pushNamed(

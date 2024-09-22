@@ -8,6 +8,7 @@ import 'package:liana_plant/pages/home/home_page.dart';
 import 'package:liana_plant/pages/create_master/map_picker_page.dart';
 import 'package:liana_plant/pages/create_master/master_creation_page.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
+import 'package:liana_plant/pages/home/map_view.dart';
 import 'package:liana_plant/pages/settings/settings_page.dart';
 import 'package:liana_plant/providers/specialty_provider.dart';
 import 'package:liana_plant/providers/theme_provider.dart';
@@ -78,6 +79,7 @@ class MyAppState extends State<MyApp> {
   // Список сторінок для навігації
   List<Widget> pages = [
     const HomePage(),
+    const MapView(),
     const SettingsPage(),
   ];
 
@@ -101,7 +103,20 @@ class MyAppState extends State<MyApp> {
     return Consumer<ThemeProvider>(builder: (context, themeProvider, child) {
       return MaterialApp(
         scrollBehavior: AppScrollBehavior(),
-        theme: themeProvider.themeData,
+        theme: themeProvider.themeData.copyWith(
+          bottomNavigationBarTheme: BottomNavigationBarThemeData(
+            backgroundColor: Theme.of(context).primaryColor, // Колір фону
+            selectedItemColor: Theme.of(context)
+                .colorScheme
+                .secondary, // Колір вибраного елемента
+            unselectedItemColor: Theme.of(context)
+                .colorScheme
+                .onSurface
+                .withOpacity(0.6), // Колір невибраного елемента
+          ),
+        ),
+        themeMode: ThemeMode.system,
+        darkTheme: AppThemes.darkTheme,
         localizationsDelegates: [
           FlutterI18nDelegate(
             translationLoader: FileTranslationLoader(
@@ -125,14 +140,18 @@ class MyAppState extends State<MyApp> {
                 label: 'Home',
               ),
               BottomNavigationBarItem(
+                icon: Icon(Icons.map),
+                label: 'Map',
+              ),
+              BottomNavigationBarItem(
                 icon: Icon(Icons.settings),
                 label: 'Settings',
               ),
             ],
             currentIndex: _selectedIndex,
-            selectedItemColor: const Color.fromRGBO(184, 255, 91, 1),
-            unselectedItemColor:
-                Theme.of(context).colorScheme.onSurface.withOpacity(1),
+            backgroundColor: themeProvider.themeData.bottomNavigationBarTheme.backgroundColor,
+  selectedItemColor: themeProvider.themeData.bottomNavigationBarTheme.selectedItemColor,
+  unselectedItemColor: themeProvider.themeData.bottomNavigationBarTheme.unselectedItemColor,
             onTap: _onItemTapped, // Зміна сторінки при виборі елемента
           ),
         ),

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:latlong2/latlong.dart' as latlong;
@@ -111,11 +112,12 @@ class _PhotoGridPageState extends State<PhotoGridPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Photo Grid'),
+        title: Text(FlutterI18n.translate(context, 'choose_photo')),
+        backgroundColor: Theme.of(context).primaryColor,
         actions: [
           if (_selectedPhoto != null)
             IconButton(
-              icon: const Icon(Icons.navigate_next),
+              icon: const Icon(Icons.navigate_next, color: Colors.black),
               onPressed: () {
                 Navigator.pushNamed(
                   context,

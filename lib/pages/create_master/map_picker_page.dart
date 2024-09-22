@@ -3,7 +3,6 @@ import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:liana_plant/constants/styles.dart';
 
 import '../../constants/app_constants.dart';
 
@@ -56,10 +55,11 @@ class MapPickerPageState extends State<MapPickerPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(FlutterI18n.translate(context, 'select_location')),
+        backgroundColor: Theme.of(context).primaryColor,
         actions: [
           if (_selectedLocation != null)
             IconButton(
-              icon: const Icon(Icons.navigate_next),
+              icon: const Icon(Icons.navigate_next, color: Colors.black),
               onPressed: () {
                 Navigator.pushNamed(
                   context,
@@ -86,27 +86,27 @@ class MapPickerPageState extends State<MapPickerPage> {
             ),
             children: [
               TileLayer(
-                urlTemplate: AppConstants.urlTemplate,
+                urlTemplate: AppConstants().urlTemplate,
                 userAgentPackageName: 'com.it-pragmat.plant',
               ),
             ],
           ),
-          const Center(
+          Center(
             child:
-                Icon(Icons.location_on, color: Styles.primaryColor, size: 40.0),
+                Icon(Icons.location_on, color: Theme.of(context).primaryColor, size: 40.0),
           ),
           Positioned(
             left: MediaQuery.of(context).size.width * 0.01,
             right: MediaQuery.of(context).size.width * 0.01,
             bottom: MediaQuery.of(context).size.height * 0.02,
             child: Container(
-              color: Styles.backgroundColor,
+              color: Theme.of(context).primaryColor,
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 _selectedLocation != null
                     ? 'Latitude: ${_selectedLocation!.latitude.toStringAsFixed(6)}, Longitude: ${_selectedLocation!.longitude.toStringAsFixed(6)}'
                     : 'Select a location',
-                style: const TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 16, color: Colors.black),
               ),
             ),
           ),
