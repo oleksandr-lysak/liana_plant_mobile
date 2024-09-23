@@ -39,8 +39,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  String serverUrl = AppConstants.serverUrl;
-  final specialtyService = SpecialtyService('${serverUrl}specialties');
+  final specialtyService = SpecialtyService();
   String? savedLanguage = await LanguageService.getLanguage();
   final tokenService = TokenService();
   final token = await tokenService.getToken();
@@ -77,18 +76,49 @@ class MyAppState extends State<MyApp> {
   int _selectedIndex = 0;
 
   // Список сторінок для навігації
-  List<Widget> pages = [
-    const HomePage(),
-    const MapView(),
-    const SettingsPage(),
-  ];
+  List<Widget> pages = [];
 
-  Widget _getHomePage() {
-    bool isLoggedIn = widget.token != null && widget.token!.isNotEmpty;
-    if (isLoggedIn) {
-      return const BookingPage(); // Якщо користувач авторизований, відкривається BookingPage
-    } else {
-      return const HomePage(); // Якщо не авторизований, відкривається HomePage
+  List<BottomNavigationBarItem> itemsNavigationBar = [];
+
+  bool isMaster(){
+    return widget.token != null && widget.token!.isNotEmpty;
+  }
+  setNavigationBar() {
+    if (isMaster()) {
+      itemsNavigationBar = const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: 'Home',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.map),
+          label: 'Map',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.settings),
+          label: 'Settings',
+        ),
+      ];
+      pages = [
+        BookingPage(masterId: 0, masterName: '',),
+        const MapView(),
+        const SettingsPage(),
+      ];
+    }else{
+      itemsNavigationBar = const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: 'Home',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.settings),
+          label: 'Settings',
+        ),
+      ];
+      pages = [
+        const MapView(),
+        const SettingsPage(),
+      ];
     }
   }
 
@@ -100,6 +130,7 @@ class MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    setNavigationBar();
     return Consumer<ThemeProvider>(builder: (context, themeProvider, child) {
       return MaterialApp(
         scrollBehavior: AppScrollBehavior(),
@@ -130,28 +161,16 @@ class MyAppState extends State<MyApp> {
           ),
         ],
         home: Scaffold(
-          body: _selectedIndex == 0
-              ? _getHomePage() // Виклик умовного віджету на головній сторінці
-              : pages[_selectedIndex], // Інші сторінки не змінюються
+          body: pages[_selectedIndex], // Інші сторінки не змінюються
           bottomNavigationBar: BottomNavigationBar(
-            items: const <BottomNavigationBarItem>[
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.map),
-                label: 'Map',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.settings),
-                label: 'Settings',
-              ),
-            ],
+            items: itemsNavigationBar,
             currentIndex: _selectedIndex,
-            backgroundColor: themeProvider.themeData.bottomNavigationBarTheme.backgroundColor,
-  selectedItemColor: themeProvider.themeData.bottomNavigationBarTheme.selectedItemColor,
-  unselectedItemColor: themeProvider.themeData.bottomNavigationBarTheme.unselectedItemColor,
+            backgroundColor: themeProvider
+                .themeData.bottomNavigationBarTheme.backgroundColor,
+            selectedItemColor: themeProvider
+                .themeData.bottomNavigationBarTheme.selectedItemColor,
+            unselectedItemColor: themeProvider
+                .themeData.bottomNavigationBarTheme.unselectedItemColor,
             onTap: _onItemTapped, // Зміна сторінки при виборі елемента
           ),
         ),
@@ -160,7 +179,7 @@ class MyAppState extends State<MyApp> {
           '/map-picker': (context) => const MapPickerPage(),
           '/photo-grid': (context) => const PhotoGridPage(),
           '/choose-photo': (context) => const PhotoGridPage(),
-          '/booking-page': (context) => const BookingPage(),
+          //'/booking-page': (context) => BookingPage(),
           '/summary-info': (context) => const SummaryInfoPage(),
           '/home-page': (context) => const HomePage(),
           '/settings-page': (context) => const HomePage(),

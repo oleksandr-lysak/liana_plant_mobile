@@ -25,5 +25,12 @@
     "register_button": "Зареєструватися",
     "title": "Загальна інформація",
     "name": "Ім'я"
+  },
+  "map_view": {
+    "title": "Огляд на карту",
+    "search": "Пошук",
+    "search_placeholder": "Шукати в цій області",
+    "select_location": "Виберіть розташування",
+    "book_appointment": "Записатись"
   }
 }

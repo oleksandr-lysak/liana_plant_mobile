@@ -7,6 +7,7 @@ import 'package:liana_plant/constants/app_constants.dart';
 import 'package:liana_plant/services/language_service.dart';
 
 class MapMarker {
+  final int? id;
   final String? image;
   final String? title;
   final String? address;
@@ -16,6 +17,7 @@ class MapMarker {
   final String? phone;
 
   MapMarker({
+    required this.id,
     required this.image,
     required this.title,
     required this.address,
@@ -29,6 +31,7 @@ class MapMarker {
     double lng = json['longitude'] as double;
     double lat = json['latitude'] as double;
     return MapMarker(
+      id: json['id'] as int,
       image: (json['main_photo'] ?? '') as String,
       title: json['name'] as String,
       address: json['address'] as String,

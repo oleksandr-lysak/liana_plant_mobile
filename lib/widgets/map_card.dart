@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:liana_plant/constants/app_constants.dart';
 import 'package:liana_plant/constants/styles.dart';
 import 'package:liana_plant/models/map_marker_model.dart';
+
+import '../pages/booking/booking_page.dart';
 
 class MapCard extends StatelessWidget {
   const MapCard({super.key, required this.item});
@@ -82,23 +85,57 @@ class MapCard extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.all(5.0),
-              child: SizedBox(
-                width: 100, // Adjust the width as needed
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.network(
-                    photo,
-                    fit: BoxFit.cover,
-                    errorBuilder: (BuildContext context, Object error,
-                        StackTrace? stackTrace) {
-                      return Image.asset(
-                        'assets/images/user_icon.png',
-                        width: 100, // налаштуйте розміри за потреби
-                        height: 100,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 100,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.network(
+                          photo,
+                          fit: BoxFit.cover,
+                          errorBuilder: (BuildContext context, Object error,
+                              StackTrace? stackTrace) {
+                            return Image.asset(
+                              'assets/images/user_icon.png',
+                              width: 100, // налаштуйте розміри за потреби
+                              height: 100,
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      fixedSize: const Size(100, 40),
+                      backgroundColor: Theme.of(context).hoverColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      elevation: 0,
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              BookingPage(masterId: item!.id!, masterName:  item!.title!),
+                        ),
                       );
                     },
+                    child: Text(
+                      FlutterI18n.translate(
+                          context, 'map_view.book_appointment'),
+                      style: Theme.of(context).textTheme.labelSmall,
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ],

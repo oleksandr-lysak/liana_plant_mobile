@@ -22,5 +22,13 @@
     "register_button": "Register",
     "title": "Summary Information",
     "name": "Name"
+  },
+  "map_view": {
+    "title": "Map View",
+    "search": "Search",
+    "search_placeholder": "Search in this area",
+    "select_location": "Select Location",
+    "book_appointment": "Register"
   }
+
 }

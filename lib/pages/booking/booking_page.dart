@@ -14,7 +14,10 @@ import '../../services/fcm_service.dart';
 import '../../services/token_service.dart';
 
 class BookingPage extends StatefulWidget {
-  const BookingPage({super.key});
+  final int masterId;
+  final String masterName;
+
+  BookingPage({super.key, required this.masterId, required this.masterName});
 
   @override
   BookingPageState createState() => BookingPageState();
@@ -30,29 +33,20 @@ class BookingPageState extends State<BookingPage> {
   String currentMonth = DateFormat('MMMM yyyy').format(DateTime.now());
   bool isTokenPresent = false;
 
-  // Список зайнятих слотів для прикладу (з датою і часом)
   List<Slot> bookedSlots = [];
-  // List<Map<String, dynamic>> bookedSlots = [
-  //   {'date': DateTime.now(), 'client': 'John Doe', 'service': 'Haircut'},
-  //   {
-  //     'date': DateTime.now().add(const Duration(hours: -10)),
-  //     'client': 'Jane Smith',
-  //     'service': 'Manicure'
-  //   },
-  // ];
 
   List<Slot> slots = [];
 
   @override
   void initState() {
     super.initState();
+
     setState(() {
       isLoading = true;
     });
     _scrollController = ScrollController();
     _scrollController.addListener(() {
-      int pageIndex = (_scrollController.offset / 70)
-          .round(); // 70 - висота контейнера + відступи
+      int pageIndex = (_scrollController.offset / 70).round();
       DateTime dateAtIndex = DateTime.now().add(Duration(days: pageIndex));
       String newMonth = DateFormat('MMM yyyy', locale).format(dateAtIndex);
 
@@ -76,7 +70,8 @@ class BookingPageState extends State<BookingPage> {
   Future<void> fetchTimeSlots() async {
     try {
       final slotService = SlotService();
-      final fetchedSlots = await slotService.getSlots(selectedDate);
+      final fetchedSlots =
+          await slotService.getSlots(selectedDate, masterId: widget.masterId);
       setState(() {
         bookedSlots = fetchedSlots;
       });
@@ -292,8 +287,10 @@ class BookingPageState extends State<BookingPage> {
     } else {
       double hourHeight = 80.0; // Висота одного годинного слоту
       DateTime currentTime = DateTime.now();
-      double currentTimeOffset =
-          _calculateCurrentTimeOffset(slots, currentTime, hourHeight);
+      String masterTitle = currentMonth;
+      if (widget.masterId != 0) {
+        masterTitle = '${widget.masterName}, $currentMonth';
+      }
 
       return Scaffold(
         appBar: AppBar(
@@ -318,7 +315,7 @@ class BookingPageState extends State<BookingPage> {
           child: Column(
             children: [
               Text(
-                currentMonth,
+                masterTitle,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 20),
@@ -333,7 +330,8 @@ class BookingPageState extends State<BookingPage> {
                     bool isSelected = selectedDayIndex == index;
 
                     return Padding(
-                      padding: const EdgeInsets.only(bottom: 15,left: 8, right: 8),
+                      padding:
+                          const EdgeInsets.only(bottom: 15, left: 8, right: 8),
                       child: GestureDetector(
                         onTap: () {
                           setState(() {
@@ -347,12 +345,12 @@ class BookingPageState extends State<BookingPage> {
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             boxShadow: [
-                                  BoxShadow(
-                                    color: Theme.of(context).shadowColor,
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 5),
-                                  ),
-                                ],
+                              BoxShadow(
+                                color: Theme.of(context).shadowColor,
+                                blurRadius: 10,
+                                offset: const Offset(0, 5),
+                              ),
+                            ],
                             color: isSelected
                                 ? Theme.of(context).primaryColor
                                 : Theme.of(context).hoverColor,
@@ -408,7 +406,6 @@ class BookingPageState extends State<BookingPage> {
                         key: ValueKey(selectedDate),
                         itemCount: slots.length + 1,
                         itemBuilder: (context, index) {
-                          
                           if (index == slots.length) {
                             // Відображення лінії поточного часу
                             return _buildCurrentTimeLine(currentTime);
