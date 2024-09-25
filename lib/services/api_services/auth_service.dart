@@ -34,12 +34,9 @@ class AuthService {
     final int userId = response['user']['id'];
     final String userName = response['user']['name'];
     final masterData = response['user']['master_data'];
-    
-    Map<String, dynamic> jsonUser = {
-      'id': userId,
-      'name': userName,
-      'phone': phone,
-      'master': {
+    Map<String, dynamic>? jsonMaster;
+    if (masterData != null) {
+      jsonMaster = {
         'id': masterData['id'],
         'name': masterData['name'],
         'description': masterData['description'],
@@ -51,7 +48,13 @@ class AuthService {
         'age': masterData['age'],
         'longitude': masterData['longitude'],
         'latitude': masterData['latitude'],
-      }
+      };
+    }
+    Map<String, dynamic> jsonUser = {
+      'id': userId,
+      'name': userName,
+      'phone': phone,
+      'master': jsonMaster,
     };
 
     final User user = User.fromJson(jsonUser);
@@ -83,5 +86,22 @@ class AuthService {
     var result =
         await apiService.postRequest('auth/send-code', {'phone': phone});
     print(result);
+  }
+
+  Future<void> registerClient(
+      String name, String phone, BuildContext context) async {
+    final response =
+        await apiService.postRequest('auth/client-register', {'name': name, 'phone': phone});
+    final token = response['token'];
+    final tokenService = TokenService();//Provider.of<TokenService>(context, listen: false);
+    final userService = UserService();// Provider.of<UserService>(context, listen: false);
+    await tokenService.saveToken(token);
+    Map<String, dynamic> data = {
+      'id': response['user']['id'],
+      'name': response['user']['name'],
+      'phone': response['user']['client_data']['phone'],
+    };
+    User user = User.fromJson(data);
+    await userService.saveUserData(user);
   }
 }

@@ -1,6 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:intl/intl.dart';
+import 'package:liana_plant/constants/app_constants.dart';
+import 'package:liana_plant/models/specialty.dart';
+import 'package:liana_plant/models/user.dart';
+import 'package:liana_plant/services/api_services/auth_service.dart';
+import 'package:liana_plant/services/api_services/specialty_service.dart';
 import 'package:liana_plant/services/language_service.dart';
 import 'package:liana_plant/services/log_service.dart';
 import 'package:liana_plant/widgets/animated_text_field.dart';
@@ -26,6 +33,7 @@ class BookingPage extends StatefulWidget {
 
 class BookingPageState extends State<BookingPage> {
   DateTime selectedDate = DateTime.now();
+  List<Specialty> specialtyList = [];
   String locale = 'en';
   int selectedDayIndex = 0;
   DateTime? selectedTimeSlot;
@@ -97,7 +105,11 @@ class BookingPageState extends State<BookingPage> {
       });
     }
     _initializeTimeSlots();
+    SpecialtyService specialtyService = SpecialtyService();
+    List<Specialty> specialtyListFromServer =
+        await specialtyService.getSpecialtyForMaster(widget.masterId);
     setState(() {
+      specialtyList = specialtyListFromServer;
       isLoading = false;
     });
   }
@@ -186,48 +198,189 @@ class BookingPageState extends State<BookingPage> {
   }
 
   Future<void> _showClientDialog(int index) async {
-    
+    // Змінна для збереження вибраної послуги
+    int? selectedSpecialtyIndex;
+
     var data = await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          TextEditingController nameController = TextEditingController();
-          TextEditingController phoneController = TextEditingController();
-          return AlertDialog(
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            title: Text(FlutterI18n.translate(context, 'input_details')),
-            content: Column(
-              children: [
-                AnimatedTextField(
-                    controller: nameController,
-                    labelText: FlutterI18n.translate(context, 'booking.name')),
-                const SizedBox(
-                  height: 20,
+      context: context,
+      builder: (BuildContext context) {
+        TextEditingController nameController = TextEditingController();
+        TextEditingController phoneController = TextEditingController();
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              title: Text(FlutterI18n.translate(context, 'input_details')),
+              content: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    AnimatedTextField(
+                      controller: nameController,
+                      labelText: FlutterI18n.translate(context, 'booking.name'),
+                    ),
+                    const SizedBox(height: 20),
+                    AnimatedTextField(
+                      controller: phoneController,
+                      labelText:
+                          FlutterI18n.translate(context, 'booking.phone'),
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 20),
+                    Text(FlutterI18n.translate(context, 'select_service')),
+                    const SizedBox(height: 10),
+                    // Додавання RadioListTile для вибору лише однієї спеціальності
+                    Column(
+                      children: List.generate(specialtyList.length, (i) {
+                        return RadioListTile<int>(
+                          title: Text(
+                              specialtyList[i].name), // Назва спеціальності
+                          value: i, // Індекс спеціальності
+                          groupValue: selectedSpecialtyIndex,
+                          onChanged: (int? value) {
+                            setState(() {
+                              selectedSpecialtyIndex =
+                                  value; // Оновлення вибору
+                            });
+                          },
+                        );
+                      }),
+                    ),
+                  ],
                 ),
-                AnimatedTextField(
-                  controller: phoneController,
-                  labelText: FlutterI18n.translate(context, 'booking.phone'),
-                  keyboardType: TextInputType.number,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    // Отримання вибраної спеціальності
+                    Specialty? selectedSpecialty;
+                    if (selectedSpecialtyIndex != null) {
+                      selectedSpecialty =
+                          specialtyList[selectedSpecialtyIndex!];
+                    }
+
+                    Navigator.of(context).pop({
+                      "name": nameController.text,
+                      "phone": phoneController.text,
+                      "specialty": selectedSpecialty,
+                      "slot_index": index,
+                    });
+                  },
+                  child: const Text('OK'),
                 ),
               ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop({
-                    "name": nameController.text,
-                    "phone": phoneController.text,
-                  });
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        });
+            );
+          },
+        );
+      },
+    );
+
     if (data != null) {
-      setState(() {
-        _updateSlotDuration(index, const Duration(minutes: 60), data: data);
-      });
+      // Показуємо діалог для введення SMS-коду
+      bool isVerified = await _showSmsVerificationDialog(
+          data["phone"], data['name'], data['slot_index'], data['specialty']);
+
+      if (isVerified) {
+        // Якщо код підтверджено, викликаємо _updateSlotDuration
+        setState(() {
+          _updateSlotDuration(index, const Duration(minutes: 60), data: data);
+        });
+      } else {
+        // Обробка невірного коду
+        // Наприклад, показати повідомлення про помилку або повернути користувача до діалогу
+        print("SMS verification failed");
+      }
     }
+  }
+
+  // Функція для відображення діалогу введення SMS-коду
+  Future<bool> _showSmsVerificationDialog(String phoneNumber, String name,
+      int slotIndex, Specialty specialty) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Center(
+          child: CircularProgressIndicator(
+            color: Theme.of(context).primaryColor,
+          ),
+        );
+      },
+    );
+    await AuthService().registerClient(name, phoneNumber, context);
+    await AuthService().sendSms(phoneNumber);
+    Navigator.of(context).pop();
+
+    TextEditingController smsCodeController = TextEditingController();
+
+    return await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text(FlutterI18n.translate(context, 'enter_sms_code')),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                      '${FlutterI18n.translate(context, 'sms_sent_to')} $phoneNumber'),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: smsCodeController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: FlutterI18n.translate(context, 'sms_code'),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () async {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext context) {
+                        return Center(
+                          child: CircularProgressIndicator(
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        );
+                      },
+                    );
+                    bool isVerified = await AuthService().confirmLogin(
+                        phoneNumber,
+                        int.parse(smsCodeController.text),
+                        context);
+
+                    Navigator.of(context).pop();
+
+                    if (isVerified) {
+                      SlotService slotService = SlotService();
+                      await slotService.bookSlotFromClient(
+                        name,
+                        phoneNumber,
+                        true,
+                        slots[slotIndex].date,
+                        specialty,
+                        widget.masterId,
+                      );
+                      Navigator.of(context).pop(true);
+                    } else {
+                      smsCodeController.text = '';
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text(FlutterI18n.translate(
+                                context, 'system.filed_verify'))),
+                      );
+                    }
+                  },
+                  child: Text(FlutterI18n.translate(context, 'verify')),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false; // Якщо діалог було закрито, повертаємо false
   }
 
   Future<void> _showDurationDialog(int index) async {
@@ -278,10 +431,11 @@ class BookingPageState extends State<BookingPage> {
     DateTime nextSlotTime = endTime;
 
     slots[index].duration = newDuration;
-    if (data != null){
+    if (data != null) {
       slots[index].isBooked = true;
       slots[index].clientName = data['name'];
       slots[index].clientPhone = data['phone'];
+      slots[index].service = data['specialty'];
     }
 
     for (int i = index + 1; i < slots.length; i++) {

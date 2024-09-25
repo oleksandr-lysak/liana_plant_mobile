@@ -17,4 +17,10 @@ class SpecialtyService {
         await ApiService(AppConstants.serverUrl).getRequest('specialties/$id');
     return Specialty.fromJson(response['data']);
   }
+
+  Future<List<Specialty>> getSpecialtyForMaster(int masterId) async {
+    final response = await apiService.getRequest('specialties/get-for-master/$masterId');
+    List<dynamic> specialtiesJson = response['data'];
+    return specialtiesJson.map((json) => Specialty.fromJson(json)).toList();
+  }
 }

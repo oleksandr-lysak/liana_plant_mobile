@@ -14,6 +14,8 @@ class ApiService {
   Future<void> _initializeHeaders() async {
     final String locale = await LanguageService.getLanguage() ?? 'en';
     dio.options.headers['locale'] = locale;
+    dio.options.headers['Content-Type'] = 'application/json';
+    dio.options.headers['Accept'] = 'application/json';
   }
 
   /// Додає заголовки з токеном, якщо вони ще не були додані.
