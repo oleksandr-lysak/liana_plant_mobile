@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:liana_plant/constants/app_constants.dart';
-import 'package:liana_plant/pages/home/drawer_menu.dart';
 import 'package:liana_plant/pages/home/map_view.dart';
 import 'package:provider/provider.dart';
 
@@ -39,10 +38,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      endDrawer: DrawerMenu(
-        selectedLanguage: selectedLanguage,
-        onLanguageChanged: onLanguageChanged,
-      ),
       appBar: AppBar(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         actions: [

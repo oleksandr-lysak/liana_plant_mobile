@@ -5,13 +5,17 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:liana_plant/constants/app_constants.dart';
 import 'package:liana_plant/models/map_marker_model.dart';
+import 'package:liana_plant/widgets/animated_text_field.dart';
+import 'package:liana_plant/widgets/buttons.dart';
 import 'package:liana_plant/widgets/loading.dart';
 import 'package:liana_plant/widgets/map_card.dart';
 import 'package:liana_plant/services/location_service.dart';
 import 'package:liana_plant/services/animation_service.dart';
 import 'package:provider/provider.dart';
 
+import '../../main.dart';
 import '../../providers/theme_provider.dart';
+import '../../services/api_services/auth_service.dart';
 
 class MapView extends StatefulWidget {
   const MapView({super.key});
@@ -84,24 +88,24 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
             child: Loading(),
           )
         : Scaffold(
-          appBar: AppBar(
-          backgroundColor: Theme.of(context).primaryColor,
-          title: Text(
-            FlutterI18n.translate(context, 'map_view.title'),
-            style: Theme.of(context).appBarTheme.titleTextStyle,
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.brightness_6, color: Colors.black),
-              onPressed: () {
-                Provider.of<ThemeProvider>(context, listen: false)
-                    .toggleTheme();
-              },
+            appBar: AppBar(
+              backgroundColor: Theme.of(context).primaryColor,
+              title: Text(
+                FlutterI18n.translate(context, 'map_view.title'),
+                style: Theme.of(context).appBarTheme.titleTextStyle,
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.brightness_6, color: Colors.black),
+                  onPressed: () {
+                    Provider.of<ThemeProvider>(context, listen: false)
+                        .toggleTheme();
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          body: Stack(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: Stack(
               children: [
                 FlutterMap(
                   mapController: mapController,
@@ -173,7 +177,8 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                   top: MediaQuery.of(context).size.height * 0.01,
                   child: FloatingActionButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/map-picker');
+                      showMasterDialog(context);
+                      //Navigator.pushNamed(context, '/map-picker');
                     },
                     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                     elevation: 10.0,
@@ -228,12 +233,137 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                 ),
               ],
             ),
-        );
+          );
   }
 
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
+  }
+
+  void showMasterDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+              FlutterI18n.translate(context, 'map_view.master_dialog.title'),
+              style: Theme.of(context).textTheme.titleMedium),
+          content: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Button(
+                labelText: FlutterI18n.translate(
+                    context, 'map_view.master_dialog.create'),
+                onPressed: () {
+                  Navigator.pushNamed(context, '/create-master');
+                },
+                active: true,
+                icon: Icons.add,
+                size: Size.medium,
+              ),
+              Button(
+                labelText: FlutterI18n.translate(
+                    context, 'map_view.master_dialog.login'),
+                onPressed: () {
+                  Navigator.pop(context);
+                  showLoginDialog(context);
+                },
+                active: false,
+                icon: Icons.login,
+                size: Size.medium,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void showLoginDialog(BuildContext context) {
+    final TextEditingController phoneController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+              FlutterI18n.translate(
+                  context, 'map_view.master_dialog.input_phone'),
+              style: Theme.of(context).textTheme.titleMedium),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              AnimatedTextField(
+                keyboardType: TextInputType.phone,
+                controller: phoneController,
+                labelText: FlutterI18n.translate(
+                    context, 'map_view.master_dialog.phone'),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                String phone = phoneController.text;
+                AuthService().sendSms(phone);
+                Navigator.pop(context);
+                showSMSDialog(context, phone);
+              },
+              child: Text(
+                FlutterI18n.translate(context, 'map_view.master_dialog.get_sms_code'),
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void showSMSDialog(BuildContext context, String phone) {
+    final TextEditingController smsCodeController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+              FlutterI18n.translate(
+                  context, 'map_view.master_dialog.input_sms_code'),
+              style: Theme.of(context).textTheme.titleMedium),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              AnimatedTextField(
+                keyboardType: TextInputType.phone,
+                controller: smsCodeController,
+                labelText: FlutterI18n.translate(
+                    context, 'map_view.master_dialog.code'),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () async {
+                int smsCode =  int.parse(smsCodeController.text);
+                // Закрити діалог після успішного введення
+                bool result = await AuthService().confirmLogin(phone, smsCode, context);
+                if (result){
+                  Navigator.pop(context);
+                  MyApp.restartApp(context);
+                }
+              },
+              child: Text(
+                FlutterI18n.translate(context, 'confirm'),
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

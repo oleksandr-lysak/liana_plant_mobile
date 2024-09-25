@@ -17,7 +17,8 @@ class BookingPage extends StatefulWidget {
   final int masterId;
   final String masterName;
 
-  BookingPage({super.key, required this.masterId, required this.masterName});
+  const BookingPage(
+      {super.key, required this.masterId, required this.masterName});
 
   @override
   BookingPageState createState() => BookingPageState();
@@ -108,8 +109,16 @@ class BookingPageState extends State<BookingPage> {
   }
 
   void _initializeTimeSlots() {
-    DateTime startTime =
-        DateTime(selectedDate.year, selectedDate.month, selectedDate.day, 7, 0);
+    DateTime currentDateTime = DateTime.now();
+    int startHour = 7;
+    if (currentDateTime.hour > startHour &&
+        selectedDate.day == currentDateTime.day &&
+        selectedDate.month == currentDateTime.month &&
+        selectedDate.year == currentDateTime.year) {
+      startHour = currentDateTime.hour;
+    }
+    DateTime startTime = DateTime(
+        selectedDate.year, selectedDate.month, selectedDate.day, startHour, 0);
     DateTime endTime = DateTime(
         selectedDate.year, selectedDate.month, selectedDate.day, 20, 0);
 
@@ -176,6 +185,51 @@ class BookingPageState extends State<BookingPage> {
         bookedDate.hour == slotDate.hour;
   }
 
+  Future<void> _showClientDialog(int index) async {
+    
+    var data = await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          TextEditingController nameController = TextEditingController();
+          TextEditingController phoneController = TextEditingController();
+          return AlertDialog(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            title: Text(FlutterI18n.translate(context, 'input_details')),
+            content: Column(
+              children: [
+                AnimatedTextField(
+                    controller: nameController,
+                    labelText: FlutterI18n.translate(context, 'booking.name')),
+                const SizedBox(
+                  height: 20,
+                ),
+                AnimatedTextField(
+                  controller: phoneController,
+                  labelText: FlutterI18n.translate(context, 'booking.phone'),
+                  keyboardType: TextInputType.number,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop({
+                    "name": nameController.text,
+                    "phone": phoneController.text,
+                  });
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        });
+    if (data != null) {
+      setState(() {
+        _updateSlotDuration(index, const Duration(minutes: 60), data: data);
+      });
+    }
+  }
+
   Future<void> _showDurationDialog(int index) async {
     Duration? duration = await showDialog(
       context: context,
@@ -218,64 +272,22 @@ class BookingPageState extends State<BookingPage> {
     }
   }
 
-  void _updateSlotDuration(int index, Duration newDuration) {
+  void _updateSlotDuration(int index, Duration newDuration, {data}) {
     DateTime startTime = slots[index].date;
     DateTime endTime = startTime.add(newDuration);
     DateTime nextSlotTime = endTime;
 
     slots[index].duration = newDuration;
+    if (data != null){
+      slots[index].isBooked = true;
+      slots[index].clientName = data['name'];
+      slots[index].clientPhone = data['phone'];
+    }
 
     for (int i = index + 1; i < slots.length; i++) {
       slots[i].date = nextSlotTime;
       nextSlotTime = nextSlotTime.add(slots[i].duration);
     }
-  }
-
-  // Розрахунок відстані від початку списку до поточного часу
-  double _calculateCurrentTimeOffset(
-      List<Slot> slots, DateTime currentTime, double hourHeight) {
-    double offset = 0.0;
-
-    for (Slot slot in slots) {
-      DateTime slotStart = slot.date;
-      DateTime slotEnd = slotStart.add(slot.duration);
-
-      if (currentTime.isAfter(slotStart) && currentTime.isBefore(slotEnd)) {
-        double minutesIntoSlot =
-            currentTime.difference(slotStart).inMinutes.toDouble();
-        double slotHeight = hourHeight * (slot.duration.inMinutes / 60);
-        offset += slotHeight * (minutesIntoSlot / slot.duration.inMinutes);
-        break;
-      } else {
-        offset += hourHeight * (slot.duration.inMinutes / 60);
-      }
-    }
-
-    return offset / 2;
-  }
-
-// Побудова віджета для лінії поточного часу
-  Widget _buildCurrentTimeLine(DateTime currentTime) {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            height: 2.0,
-            color: Colors.red,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 8.0),
-          child: Text(
-            DateFormat.jm(locale).format(currentTime),
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.red,
-            ),
-          ),
-        ),
-      ],
-    );
   }
 
   @override
@@ -286,7 +298,6 @@ class BookingPageState extends State<BookingPage> {
       );
     } else {
       double hourHeight = 80.0; // Висота одного годинного слоту
-      DateTime currentTime = DateTime.now();
       String masterTitle = currentMonth;
       if (widget.masterId != 0) {
         masterTitle = '${widget.masterName}, $currentMonth';
@@ -404,12 +415,8 @@ class BookingPageState extends State<BookingPage> {
                     children: [
                       ListView.builder(
                         key: ValueKey(selectedDate),
-                        itemCount: slots.length + 1,
+                        itemCount: slots.length,
                         itemBuilder: (context, index) {
-                          if (index == slots.length) {
-                            // Відображення лінії поточного часу
-                            return _buildCurrentTimeLine(currentTime);
-                          }
                           DateTime startTime = slots[index].date;
                           Duration duration = slots[index].duration;
 
@@ -417,11 +424,15 @@ class BookingPageState extends State<BookingPage> {
                           double slotHeight =
                               hourHeight * (duration.inMinutes / 60);
 
+                          Function dialog = _showDurationDialog;
+                          if (widget.masterId != 0) {
+                            dialog = _showClientDialog;
+                          }
                           return GestureDetector(
                             onTap: slots[index].isBooked
                                 ? null
                                 : () {
-                                    _showDurationDialog(index);
+                                    dialog(index);
                                   },
                             child: Container(
                               margin: const EdgeInsets.symmetric(
@@ -511,13 +522,6 @@ class BookingPageState extends State<BookingPage> {
                           );
                         },
                       ),
-                      // Positioned(
-                      //   top:
-                      //       currentTimeOffset, // Позиція лінії від початку списку
-                      //   left: 16.0, // Відступ зліва
-                      //   right: 16.0, // Відступ справа
-                      //   child: _buildCurrentTimeLine(currentTime),
-                      // ),
                     ],
                   ),
                 ),

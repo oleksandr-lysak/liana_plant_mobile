@@ -48,8 +48,18 @@ class AppThemes {
         fontWeight: FontWeight.w400,
       ),
       bodyMedium: const TextStyle(
-        color: Colors.white54,
+        color: Color.fromARGB(255, 0, 0, 0),
         fontSize: 16,
+        fontWeight: FontWeight.normal,
+      ),
+      bodyLarge: const TextStyle(
+        color: Color.fromARGB(255, 0, 0, 0),
+        fontSize: 18,
+        fontWeight: FontWeight.normal,
+      ),
+      bodySmall: const TextStyle(
+        color: Color.fromARGB(255, 0, 0, 0),
+        fontSize: 14,
         fontWeight: FontWeight.normal,
       ),
       labelLarge: const TextStyle(
@@ -100,10 +110,20 @@ class AppThemes {
       backgroundColor: Color.fromRGBO(184, 255, 91, 1),
       foregroundColor: Colors.black,
     ),
+    dialogTheme: const DialogTheme(
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8.0)), // Закруглення кутів
+        ),
+    ),
   );
 
   // Темна тема
   static final ThemeData lightTheme = ThemeData(
+    dialogTheme: const DialogTheme(
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(8.0)), // Закруглення кутів
+        ),
+    ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor:
           mainColorLight, // Колір фону для світлої теми
@@ -150,8 +170,18 @@ class AppThemes {
         fontWeight: FontWeight.w400,
       ),
       bodyMedium: const TextStyle(
-        color: Colors.grey,
+        color: Color.fromARGB(255, 0, 0, 0),
         fontSize: 16,
+        fontWeight: FontWeight.normal,
+      ),
+      bodyLarge: const TextStyle(
+        color: Color.fromARGB(255, 0, 0, 0),
+        fontSize: 18,
+        fontWeight: FontWeight.normal,
+      ),
+      bodySmall: const TextStyle(
+        color: Color.fromARGB(255, 0, 0, 0),
+        fontSize: 14,
         fontWeight: FontWeight.normal,
       ),
       labelLarge: const TextStyle(

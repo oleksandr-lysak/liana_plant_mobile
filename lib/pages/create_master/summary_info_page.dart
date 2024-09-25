@@ -75,7 +75,7 @@ class SummaryInfoPageState extends State<SummaryInfoPage>
   }
 
   void initData() async {
-    AuthService(AppConstants.serverUrl).sendSms(_phone!);
+    AuthService().sendSms(_phone!);
     if (_selectedLocation != null) {
       _address = await LocationService.getAddressFromCoordinates(
           _selectedLocation!.latitude, _selectedLocation!.longitude);
@@ -308,7 +308,7 @@ class SummaryInfoPageState extends State<SummaryInfoPage>
     setState(() {
       isLoading = true;
     });
-    await AuthService(AppConstants.serverUrl).register(request, context);
+    await AuthService().register(request, context);
     Navigator.pushReplacementNamed(
       // ignore: use_build_context_synchronously
       context,

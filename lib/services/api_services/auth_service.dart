@@ -1,5 +1,9 @@
 import 'package:flutter/cupertino.dart';
-import 'package:liana_plant/models/master.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_i18n/flutter_i18n.dart';
+import 'package:liana_plant/constants/app_constants.dart';
+import 'package:liana_plant/models/user.dart';
+import 'package:liana_plant/services/user_service.dart';
 import 'package:provider/provider.dart';
 import '../token_service.dart';
 import 'api_service.dart';
@@ -7,21 +11,77 @@ import 'api_service.dart';
 class AuthService {
   final ApiService apiService;
 
-  AuthService(String apiUrl) : apiService = ApiService(apiUrl);
+  AuthService() : apiService = ApiService(AppConstants.serverUrl);
 
-  Future<Master> login(String email, String password) async {
-    final response = await apiService.postRequest('login', {'email': email, 'password': password});
-    return Master.fromJson(response['data']);
+  Future<bool> confirmLogin(
+    String phone, int code, BuildContext context) async {
+  try {
+    final response = await apiService
+        .postRequest('auth/verify-code', {'sms_code': code, 'phone': phone});
+
+    if (response.containsKey('error')) {
+      final errorMessage = FlutterI18n.translate(context, response['error']);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
+      return false;
+    }
+
+    final token = response['token'];
+    final tokenService = TokenService();
+    await tokenService.saveToken(token);
+
+    final int userId = response['user']['id'];
+    final String userName = response['user']['name'];
+    final masterData = response['user']['master_data'];
+    
+    Map<String, dynamic> jsonUser = {
+      'id': userId,
+      'name': userName,
+      'phone': phone,
+      'master': {
+        'id': masterData['id'],
+        'name': masterData['name'],
+        'description': masterData['description'],
+        'photo': masterData['photo'],
+        'phone': masterData['phone'],
+        'address': masterData['address'],
+        'specialities': masterData['specialities'],
+        'speciality_id': masterData['speciality_id'],
+        'age': masterData['age'],
+        'longitude': masterData['longitude'],
+        'latitude': masterData['latitude'],
+      }
+    };
+
+    final User user = User.fromJson(jsonUser);
+    UserService userService = UserService();
+    await userService.saveUserData(user);
+    return true;
+  } catch (error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(FlutterI18n.translate(context, 'system.filed_verify'))),
+    );
+    return false;
   }
+}
 
-  Future<void> register(Map<String, dynamic> userData, BuildContext context) async {
-    final response = await apiService.postRequest('auth/master-register', userData);
+
+  Future<void> register(
+      Map<String, dynamic> userData, BuildContext context) async {
+    final response =
+        await apiService.postRequest('auth/master-register', userData);
     final token = response['token'];
     final tokenService = Provider.of<TokenService>(context, listen: false);
+    final userService = Provider.of<UserService>(context, listen: false);
     await tokenService.saveToken(token);
+    User user = User.fromJson(response);
+    await userService.saveUserData(user);
   }
 
   Future<void> sendSms(String phone) async {
-    await apiService.postRequest('auth/send-code', {'phone': phone});
+    var result =
+        await apiService.postRequest('auth/send-code', {'phone': phone});
+    print(result);
   }
 }

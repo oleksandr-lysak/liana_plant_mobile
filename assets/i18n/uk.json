@@ -1,4 +1,7 @@
 {
+  "home": "Головна",
+  "map": "Карта",
+  "settings": "Налаштування",
   "search_in_this_area": "Шукати в цій області",
   "select_location": "Виберіть розташування",
   "language": "Мова",
@@ -31,6 +34,22 @@
     "search": "Пошук",
     "search_placeholder": "Шукати в цій області",
     "select_location": "Виберіть розташування",
-    "book_appointment": "Записатись"
+    "book_appointment": "Записатись",
+    "master_dialog":{
+      "title": "Створити майстра чи увійти?",
+      "create": "Створити",
+      "login": "Увійти",
+      "input_phone": "Введіть номер телефону",
+      "phone": "Телефон",
+      "get_sms_code": "Отримати СМС код",
+      "code": "Код",
+      "input_sms_code": "Введіть код"
+    }
+  },
+  "system": {
+    "filed_verify": "Код не верифіковано, будь лакса спробуйте ще раз."
+  },
+  "settings_view": {
+    "logout": "Logout"
   }
 }

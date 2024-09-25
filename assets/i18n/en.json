@@ -1,4 +1,7 @@
 {
+  "home": "Home",
+  "map": "Map",
+  "settings": "Settings",
   "search_in_this_area": "Search in this area",
   "select_location": "Select Location",
   "language": "Language",
@@ -28,7 +31,22 @@
     "search": "Search",
     "search_placeholder": "Search in this area",
     "select_location": "Select Location",
-    "book_appointment": "Register"
+    "book_appointment": "Register",
+    "master_dialog": {
+      "title": "Create master or login?",
+      "create": "Create",
+      "login": "Login",
+      "input_phone": "Input phone number",
+      "phone": "Phone",
+      "get_sms_code": "Get SMS code",
+      "code": "Code",
+      "input_sms_code": "Input code"
+    }
+  },
+  "system": {
+    "filed_verify": "Failed to verify code. Please try again."
+  },
+  "settings_view": {
+    "logout": "Logout"
   }
-
 }
