@@ -86,10 +86,7 @@ class MyApp extends StatefulWidget {
   MyAppState createState() => MyAppState();
 }
 
-  
-
-
-  class MyAppState extends State<MyApp> {
+class MyAppState extends State<MyApp> {
   Key key = UniqueKey();
   int _selectedIndex = 0;
   late Future<List<Widget>> pagesFuture;
@@ -100,22 +97,21 @@ class MyApp extends StatefulWidget {
     });
   }
 
-Future<bool> isMaster() async {
+  Future<bool> isMaster() async {
     return await UserService().isMaster();
   }
-
-  
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
+
   Future<List<Widget>> setNavigationBar() async {
     List<Widget> pages;
     if (await isMaster()) {
       pages = [
-        BookingPage(
+        const BookingPage(
           masterId: 0,
           masterName: '',
         ),
@@ -140,15 +136,17 @@ Future<bool> isMaster() async {
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(builder: (context, themeProvider, child) {
-      return Consumer<LanguageProvider>(builder: (context, languageProvider, child) {
+      return Consumer<LanguageProvider>(
+          builder: (context, languageProvider, child) {
         return MaterialApp(
           key: key,
           scrollBehavior: AppScrollBehavior(),
           theme: themeProvider.themeData.copyWith(
             bottomNavigationBarTheme: BottomNavigationBarThemeData(
-              backgroundColor: Theme.of(context).primaryColor, 
-              selectedItemColor: Theme.of(context).colorScheme.secondary, 
-              unselectedItemColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              backgroundColor: Theme.of(context).primaryColor,
+              selectedItemColor: Theme.of(context).colorScheme.secondary,
+              unselectedItemColor:
+                  Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
             ),
           ),
           themeMode: ThemeMode.system,
@@ -167,7 +165,9 @@ Future<bool> isMaster() async {
             future: pagesFuture, // викликаємо Future
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator()); // Індикатор завантаження
+                return const Center(
+                    child:
+                        CircularProgressIndicator()); // Індикатор завантаження
               } else if (snapshot.hasError) {
                 return Center(child: Text('Error: ${snapshot.error}'));
               }

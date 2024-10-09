@@ -56,7 +56,6 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
       setState(() {
         loading = false;
       });
-      // Тут можна додати повідомлення про помилку або логування
     }
   }
 
@@ -67,7 +66,7 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
       mapController,
       _animationController,
       currentLocation,
-      mapController.camera.zoom,
+      mapController.zoom,
     );
     setState(() {});
   }
@@ -178,7 +177,6 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                   child: FloatingActionButton(
                     onPressed: () {
                       showMasterDialog(context);
-                      //Navigator.pushNamed(context, '/map-picker');
                     },
                     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                     elevation: 10.0,
@@ -188,8 +186,7 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                 ),
                 Positioned(
                   right: 10,
-                  bottom: MediaQuery.of(context).size.height * 0.3 +
-                      165, // Місце під кнопками zoom
+                  bottom: MediaQuery.of(context).size.height * 0.3 + 165,
                   child: FloatingActionButton(
                     onPressed: _moveToCurrentLocation,
                     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -197,7 +194,7 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                     child: Icon(
                       Icons.my_location,
                       color: Theme.of(context).indicatorColor,
-                    ), // Іконка для позиціювання на поточному положенні
+                    ),
                   ),
                 ),
                 Positioned(
@@ -284,7 +281,6 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
 
   void showLoginDialog(BuildContext context) {
     final TextEditingController phoneController = TextEditingController();
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -313,7 +309,8 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                 showSMSDialog(context, phone);
               },
               child: Text(
-                FlutterI18n.translate(context, 'map_view.master_dialog.get_sms_code'),
+                FlutterI18n.translate(
+                    context, 'map_view.master_dialog.get_sms_code'),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
@@ -338,7 +335,6 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               AnimatedTextField(
-                keyboardType: TextInputType.phone,
                 controller: smsCodeController,
                 labelText: FlutterI18n.translate(
                     context, 'map_view.master_dialog.code'),
@@ -348,16 +344,18 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
           actions: <Widget>[
             ElevatedButton(
               onPressed: () async {
-                int smsCode =  int.parse(smsCodeController.text);
+                int smsCode = int.parse(smsCodeController.text);
                 // Закрити діалог після успішного введення
-                bool result = await AuthService().confirmLogin(phone, smsCode, context);
-                if (result){
+                bool result =
+                    await AuthService().confirmLogin(phone, smsCode, context);
+                if (result) {
                   Navigator.pop(context);
                   MyApp.restartApp(context);
                 }
               },
               child: Text(
-                FlutterI18n.translate(context, 'confirm'),
+                FlutterI18n.translate(
+                    context, 'map_view.master_dialog.confirm'),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
