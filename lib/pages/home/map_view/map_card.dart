@@ -4,7 +4,8 @@ import 'package:liana_plant/constants/app_constants.dart';
 import 'package:liana_plant/constants/styles.dart';
 import 'package:liana_plant/models/map_marker_model.dart';
 
-import '../pages/booking/booking_page.dart';
+import '../../booking/booking_page.dart';
+//import 'package:liana_plant/pages/booking/booking_page.dart';
 
 class MapCard extends StatelessWidget {
   const MapCard({super.key, required this.item});
@@ -124,8 +125,8 @@ class MapCard extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              BookingPage(masterId: item!.id!, masterName:  item!.title!),
+                          builder: (context) => BookingPage(
+                              masterId: item!.id!, masterName: item!.title!),
                         ),
                       );
                     },
