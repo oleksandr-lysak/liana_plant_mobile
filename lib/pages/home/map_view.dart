@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
-import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:liana_plant/constants/app_constants.dart';
 import 'package:liana_plant/models/map_marker_model.dart';
 import 'package:liana_plant/widgets/animated_text_field.dart';
@@ -10,7 +9,6 @@ import 'package:liana_plant/widgets/buttons.dart';
 import 'package:liana_plant/widgets/loading.dart';
 import 'package:liana_plant/widgets/map_card.dart';
 import 'package:liana_plant/services/location_service.dart';
-import 'package:liana_plant/services/animation_service.dart';
 import 'package:provider/provider.dart';
 
 import '../../main.dart';
@@ -24,9 +22,10 @@ class MapView extends StatefulWidget {
   MapViewState createState() => MapViewState();
 }
 
-class MapViewState extends State<MapView> with TickerProviderStateMixin {
+class MapViewState extends State<MapView> with OSMMixinObserver {
+  bool animateMap = true;
   final pageController = PageController();
-  late final MapController mapController;
+  late MapController mapController;
   late AnimationController _animationController;
   List<MapMarker> mapMarkers = [];
   LatLng currentLocation = AppConstants.myLocation;
@@ -36,23 +35,65 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    mapController = MapController();
-    _animationController = AnimationController(
-        duration: const Duration(milliseconds: 1000), vsync: this);
     _loadMapData();
   }
 
   Future<void> _loadMapData() async {
     try {
+      mapController = MapController.customLayer(
+        initPosition: GeoPoint(
+          latitude: 47.4358055,
+          longitude: 8.4737324,
+        ),
+        customTile: CustomTile(urlsServers: [
+          TileURLs(url: "https://tile.openstreetmap.de/"),
+        ], tileExtension: '.png', sourceName: 'osmGermany'),
+      );
+
+      setState(() {
+        loading = false;
+      });
+
       final location = await LocationService.getCurrentLocation();
       final markers = await getData(location.longitude, location.latitude, 11);
 
       setState(() {
         currentLocation = location;
         mapMarkers = markers;
-        loading = false;
       });
+
+      for (int i = 0; i < markers.length; i++) {
+        var marker = markers[i];
+        mapController.addMarker(
+          GeoPoint(
+            latitude: marker.location!.latitude,
+            longitude: marker.location!.longitude,
+          ),
+          markerIcon: MarkerIcon(
+            iconWidget: GestureDetector(
+              onTap: () {
+                _onMarkerTap(i);
+              },
+              child: Icon(
+                Icons.location_on,
+                color: Theme.of(context).primaryColor,
+                size: 34,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withOpacity(0.5),
+                    blurRadius: 6,
+                    offset: const Offset(2, 2),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
+
+      setState(() {});
     } catch (error) {
+      print(error.toString());
       setState(() {
         loading = false;
       });
@@ -60,24 +101,25 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
   }
 
   void _onMarkerTap(int index) {
-    selectedIndex = index;
-    currentLocation = mapMarkers[index].location ?? AppConstants.myLocation;
-    AnimationService.animatedMapMove(
-      mapController,
-      _animationController,
-      currentLocation,
-      mapController.zoom,
-    );
-    setState(() {});
+    if (animateMap) {
+      selectedIndex = index;
+      currentLocation = mapMarkers[index].location ?? AppConstants.myLocation;
+      mapController.moveTo(
+          GeoPoint(
+              latitude: currentLocation.latitude,
+              longitude: currentLocation.longitude),
+          animate: true);
+      mapController.setZoom(
+        zoomLevel: 16,
+        stepZoom: 0.5,
+      );
+
+      setState(() {});
+    }
   }
 
   void _moveToCurrentLocation() {
-    AnimationService.animatedMapMove(
-      mapController,
-      _animationController,
-      currentLocation,
-      18,
-    );
+    mapController.currentLocation();
   }
 
   @override
@@ -106,56 +148,22 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             body: Stack(
               children: [
-                FlutterMap(
-                  mapController: mapController,
-                  options: MapOptions(
-                    minZoom: 2,
-                    maxZoom: 18,
-                    initialZoom: 11,
-                    initialCenter: currentLocation,
-                  ),
-                  children: [
-                    TileLayer(
-                      urlTemplate: AppConstants().urlTemplate,
-                      userAgentPackageName: 'com.it-pragmat.plant',
-                    ),
-                    MarkerLayer(
-                      markers: [
-                        // Маркер для вашого місцеположення
-                        Marker(
-                          height: 80,
-                          width: 80,
-                          point: currentLocation,
-                          child: Icon(
-                            Icons.my_location,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                        ),
-                        // Інші маркери
-                        ...mapMarkers.map((marker) {
-                          int index = mapMarkers.indexOf(marker);
-                          return Marker(
-                            height: 40,
-                            width: 40,
-                            point: marker.location ?? AppConstants.myLocation,
-                            child: GestureDetector(
-                              onTap: () => _onMarkerTap(index),
-                              child: AnimatedScale(
-                                duration: const Duration(milliseconds: 500),
-                                scale: selectedIndex == index ? 1 : 0.7,
-                                child: AnimatedOpacity(
-                                  duration: const Duration(milliseconds: 500),
-                                  opacity: selectedIndex == index ? 1 : 0.5,
-                                  child: SvgPicture.asset(
-                                      'assets/icons/map_marker.svg'),
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ],
-                    ),
-                  ],
+                OSMFlutter(
+                  controller: mapController,
+                  osmOption: OSMOption(),
+                  onGeoPointClicked: (p0) async {
+                    for (int i = 0; i < mapMarkers.length; i++) {
+                      if (mapMarkers[i].location!.latitude == p0.latitude &&
+                          mapMarkers[i].location!.longitude == p0.longitude) {
+                        animateMap = false;
+                        await pageController.animateToPage(i,
+                            duration: const Duration(seconds: 1),
+                            curve: Curves.ease);
+                        animateMap = true;
+                        break;
+                      }
+                    }
+                  },
                 ),
                 Positioned(
                   left: 0,
@@ -204,8 +212,7 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                     children: [
                       FloatingActionButton(
                         onPressed: () {
-                          final zoom = mapController.camera.zoom + 1;
-                          mapController.move(mapController.camera.center, zoom);
+                          mapController.zoomIn();
                         },
                         backgroundColor:
                             Theme.of(context).scaffoldBackgroundColor,
@@ -216,8 +223,7 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                       const SizedBox(height: 10),
                       FloatingActionButton(
                         onPressed: () {
-                          final zoom = mapController.camera.zoom - 1;
-                          mapController.move(mapController.camera.center, zoom);
+                          mapController.zoomOut();
                         },
                         backgroundColor:
                             Theme.of(context).scaffoldBackgroundColor,
@@ -345,7 +351,6 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
             ElevatedButton(
               onPressed: () async {
                 int smsCode = int.parse(smsCodeController.text);
-                // Закрити діалог після успішного введення
                 bool result =
                     await AuthService().confirmLogin(phone, smsCode, context);
                 if (result) {
@@ -363,5 +368,11 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
         );
       },
     );
+  }
+
+  @override
+  Future<void> mapIsReady(bool isReady) {
+    // TODO: implement mapIsReady
+    throw UnimplementedError();
   }
 }
