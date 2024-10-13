@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import '../../constants/app_constants.dart';
 import '../../models/map_marker_model.dart';
@@ -23,7 +24,7 @@ class MapViewState extends State<MapView> with OSMMixinObserver {
   late MapController mapController;
   late PageController pageController;
   List<MapMarker> mapMarkers = [];
-  LatLng currentLocation = AppConstants.myLocation;
+  LatLng currentLocation = LatLng(0, 0);
   int selectedIndex = 0;
   bool loading = true;
 
@@ -31,7 +32,34 @@ class MapViewState extends State<MapView> with OSMMixinObserver {
   void initState() {
     super.initState();
     pageController = PageController();
-    _loadMapData();
+    //_loadMapData();
+    _getCurrentLocation();
+  }
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      setState(() {
+        currentLocation = LatLng(position.latitude, position.longitude);
+        mapController = MapController(
+          initMapWithUserPosition: UserTrackingOption(
+            enableTracking: true,
+            unFollowUser: false,
+          ),
+          //   initPosition: GeoPoint(
+          //       latitude: currentLocation.latitude,
+          //       longitude: currentLocation.longitude),
+        );
+        loading = false; // Завантаження завершено
+      });
+
+      _loadMapData(); // Завантаження даних для карти
+    } catch (e) {
+      // Обробка помилок, наприклад, якщо користувач відмовився надати доступ до місцеположення
+      print(e);
+      // Встановіть дефолтні координати або обробіть помилку
+    }
   }
 
   @override
@@ -76,6 +104,14 @@ class MapViewState extends State<MapView> with OSMMixinObserver {
   }
 
   void _addMarkersToMap(List<MapMarker> markers) {
+    mapController.moveTo(
+      GeoPoint(
+          latitude: currentLocation.latitude,
+          longitude: currentLocation.longitude),
+      animate: true,
+    );
+    mapController.setZoom(zoomLevel: 16, stepZoom: 0.5);
+    setState(() {});
     for (int i = 0; i < markers.length; i++) {
       var marker = markers[i];
       mapController.addMarker(
@@ -196,6 +232,7 @@ class MapViewState extends State<MapView> with OSMMixinObserver {
   @override
   Future<void> mapIsReady(bool isReady) {
     // TODO: implement mapIsReady
+
     throw UnimplementedError();
   }
 }

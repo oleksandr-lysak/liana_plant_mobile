@@ -1,4 +1,4 @@
-import 'package:liana_plant/models/specialty.dart';
+import 'package:liana_plant/models/service.dart';
 
 class Slot {
   int? id;
@@ -8,7 +8,7 @@ class Slot {
   String? source;
   Duration duration;
   String? clientPhone;
-  Specialty? service;
+  Service? service;
 
   Slot({
     this.id,
@@ -30,9 +30,9 @@ class Slot {
       isBooked: json['is_booked'] == 1,
       clientName: json['client_name'],
       source: json['source'],
-      duration: Duration(minutes:  json['duration']),
+      duration: Duration(minutes: json['duration']),
       clientPhone: json['client_phone'],
-      service: Specialty.fromJson(json['service']),
+      service: Service.fromJson(json['service']),
     );
   }
 }

@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:liana_plant/constants/app_constants.dart';
-import 'package:liana_plant/models/specialty.dart';
+import 'package:liana_plant/models/service.dart';
 import 'package:liana_plant/services/api_services/auth_service.dart';
 import 'package:liana_plant/services/location_service.dart';
-import 'package:liana_plant/services/api_services/specialty_service.dart';
+import 'package:liana_plant/services/api_services/service_service.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:liana_plant/constants/styles.dart';
 import 'package:liana_plant/widgets/loading.dart';
@@ -40,7 +40,7 @@ class SummaryInfoPageState extends State<SummaryInfoPage>
   String? _placeId;
   bool isLoading = true;
   File? _photoFile;
-  Specialty? _specialty;
+  Service? _service;
 
   @override
   void initState() {
@@ -86,7 +86,7 @@ class SummaryInfoPageState extends State<SummaryInfoPage>
       await _getPhotoFromGallery(_photoId!);
     }
     if (_specialtyId != null) {
-      _specialty = await SpecialtyService.getSpecialtyById(_specialtyId!);
+      _service = await ServiceService.getServiceById(_specialtyId!);
     }
     setState(() {
       isLoading = false;
@@ -206,7 +206,7 @@ class SummaryInfoPageState extends State<SummaryInfoPage>
                     context, 'summary_info_page.not_provided')),
         _buildInfoTile(
             FlutterI18n.translate(context, 'summary_info_page.specialty'),
-            _specialty?.name ??
+            _service?.name ??
                 FlutterI18n.translate(
                     context, 'summary_info_page.not_provided')),
       ],

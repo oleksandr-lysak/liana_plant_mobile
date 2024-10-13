@@ -11,11 +11,11 @@ import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:liana_plant/pages/home/map_view.dart';
 import 'package:liana_plant/pages/settings/settings_page.dart';
 import 'package:liana_plant/providers/language_provider.dart';
-import 'package:liana_plant/providers/specialty_provider.dart';
+import 'package:liana_plant/providers/service_provider.dart';
 import 'package:liana_plant/providers/theme_provider.dart';
 import 'package:liana_plant/services/language_service.dart';
 import 'package:liana_plant/services/log_service.dart';
-import 'package:liana_plant/services/api_services/specialty_service.dart';
+import 'package:liana_plant/services/api_services/service_service.dart';
 import 'package:liana_plant/services/token_service.dart';
 import 'package:liana_plant/services/user_service.dart';
 import 'package:liana_plant/widgets/photo_grid_page.dart';
@@ -42,7 +42,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  final specialtyService = SpecialtyService();
+  final specialtyService = ServiceService();
   String? savedLanguage = await LanguageService.getLanguage();
   final tokenService = TokenService();
   final token = await tokenService.getToken();
@@ -50,7 +50,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (context) => SpecialtyProvider(specialtyService),
+          create: (context) => ServiceProvider(specialtyService),
         ),
         Provider<TokenService>(
           create: (context) => TokenService(),

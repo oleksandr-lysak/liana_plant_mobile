@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:intl/intl.dart';
 import 'package:liana_plant/constants/app_constants.dart';
-import 'package:liana_plant/models/specialty.dart';
+import 'package:liana_plant/models/service.dart';
 import 'package:liana_plant/models/user.dart';
 import 'package:liana_plant/services/api_services/auth_service.dart';
-import 'package:liana_plant/services/api_services/specialty_service.dart';
+import 'package:liana_plant/services/api_services/service_service.dart';
 import 'package:liana_plant/services/language_service.dart';
 import 'package:liana_plant/services/log_service.dart';
 import 'package:liana_plant/widgets/animated_text_field.dart';
@@ -33,7 +33,7 @@ class BookingPage extends StatefulWidget {
 
 class BookingPageState extends State<BookingPage> {
   DateTime selectedDate = DateTime.now();
-  List<Specialty> specialtyList = [];
+  List<Service> specialtyList = [];
   String locale = 'en';
   int selectedDayIndex = 0;
   DateTime? selectedTimeSlot;
@@ -105,9 +105,9 @@ class BookingPageState extends State<BookingPage> {
       });
     }
     _initializeTimeSlots();
-    SpecialtyService specialtyService = SpecialtyService();
-    List<Specialty> specialtyListFromServer =
-        await specialtyService.getSpecialtyForMaster(widget.masterId);
+    ServiceService specialtyService = ServiceService();
+    List<Service> specialtyListFromServer =
+        await specialtyService.getServiceForMaster(widget.masterId);
     setState(() {
       specialtyList = specialtyListFromServer;
       isLoading = false;
@@ -253,7 +253,7 @@ class BookingPageState extends State<BookingPage> {
                 TextButton(
                   onPressed: () {
                     // Отримання вибраної спеціальності
-                    Specialty? selectedSpecialty;
+                    Service? selectedSpecialty;
                     if (selectedSpecialtyIndex != null) {
                       selectedSpecialty =
                           specialtyList[selectedSpecialtyIndex!];
@@ -294,8 +294,8 @@ class BookingPageState extends State<BookingPage> {
   }
 
   // Функція для відображення діалогу введення SMS-коду
-  Future<bool> _showSmsVerificationDialog(String phoneNumber, String name,
-      int slotIndex, Specialty specialty) async {
+  Future<bool> _showSmsVerificationDialog(
+      String phoneNumber, String name, int slotIndex, Service specialty) async {
     showDialog(
       context: context,
       barrierDismissible: false,

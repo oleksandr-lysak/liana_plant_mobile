@@ -4,7 +4,7 @@ import 'package:liana_plant/widgets/animated_dropdown_field.dart';
 import 'package:liana_plant/widgets/animated_text_field.dart';
 import 'package:liana_plant/widgets/loading.dart';
 import 'package:provider/provider.dart'; // Додати імпорт для провайдера
-import 'package:liana_plant/providers/specialty_provider.dart'; // Імпорт для провайдера спеціальностей
+import 'package:liana_plant/providers/service_provider.dart'; // Імпорт для провайдера спеціальностей
 import 'package:latlong2/latlong.dart' as latlong;
 
 import '../../providers/theme_provider.dart'; // Імпорт для роботи з геолокацією
@@ -37,18 +37,18 @@ class MasterCreationPageState extends State<MasterCreationPage> {
     super.initState();
     // Ініціалізація даних з провайдера
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<SpecialtyProvider>(context, listen: false).loadSpecialties();
+      Provider.of<ServiceProvider>(context, listen: false).loadSpecialties();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     // Отримання провайдера
-    final specialtyProvider = Provider.of<SpecialtyProvider>(context);
+    final serviceProvider = Provider.of<ServiceProvider>(context);
     _selectedLocation =
         ModalRoute.of(context)?.settings.arguments as latlong.LatLng;
 
-    if (specialtyProvider.isLoading) {
+    if (serviceProvider.isLoading) {
       return Scaffold(
         appBar: AppBar(
             title: Text(FlutterI18n.translate(context, 'create_master'))),
@@ -56,11 +56,11 @@ class MasterCreationPageState extends State<MasterCreationPage> {
       );
     }
 
-    if (specialtyProvider.errorMessage != null) {
+    if (serviceProvider.errorMessage != null) {
       return Scaffold(
         appBar: AppBar(
             title: Text(FlutterI18n.translate(context, 'create_master'))),
-        body: Center(child: Text('Error: ${specialtyProvider.errorMessage}')),
+        body: Center(child: Text('Error: ${serviceProvider.errorMessage}')),
       );
     }
 
@@ -70,7 +70,10 @@ class MasterCreationPageState extends State<MasterCreationPage> {
         backgroundColor: Theme.of(context).primaryColor,
         actions: [
           IconButton(
-            icon: const Icon(Icons.brightness_6, color: Colors.black,),
+            icon: const Icon(
+              Icons.brightness_6,
+              color: Colors.black,
+            ),
             onPressed: () {
               Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
             },
@@ -134,9 +137,9 @@ class MasterCreationPageState extends State<MasterCreationPage> {
               AnimatedDropdownField(
                 labelText: FlutterI18n.translate(context, 'select_speciality'),
                 hintText: FlutterI18n.translate(context, 'choose_speciality'),
-                items: specialtyProvider.specialties
-                    .map((specialty) =>
-                        DropdownItem(id: specialty.id, name: specialty.name))
+                items: serviceProvider.services
+                    .map((service) =>
+                        DropdownItem(id: service.id, name: service.name))
                     .toList(),
                 selectedItem: selectedItem,
                 validator: (value) => value?.id.isNaN ?? true

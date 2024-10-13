@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:liana_plant/models/specialty.dart';
-import 'package:liana_plant/services/api_services/specialty_service.dart';
+import 'package:liana_plant/models/service.dart';
+import 'package:liana_plant/services/api_services/service_service.dart';
 
-class SpecialtyProvider with ChangeNotifier {
-  final SpecialtyService _service;
-  List<Specialty> _specialties = [];
+class ServiceProvider with ChangeNotifier {
+  final ServiceService _service;
+  List<Service> _services = [];
   bool _isLoading = false;
   String? _errorMessage;
 
-  SpecialtyProvider(this._service);
+  ServiceProvider(this._service);
 
-  List<Specialty> get specialties => _specialties;
+  List<Service> get services => _services;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
@@ -19,7 +19,7 @@ class SpecialtyProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _specialties = await _service.fetchSpecialties();
+      _services = await _service.fetchServices();
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
