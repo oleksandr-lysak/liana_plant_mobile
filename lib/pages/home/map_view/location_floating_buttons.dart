@@ -15,8 +15,10 @@ class LocationFloatingButtons extends StatelessWidget {
       child: Column(
         children: [
           FloatingActionButton(
-            onPressed: () {
+            onPressed: () async {
               mapController.zoomIn();
+              List<GeoPoint> geoPoints = await mapController.geopoints;
+              mapController.removeMarkers(geoPoints);
             },
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             elevation: 10.0,
@@ -24,8 +26,11 @@ class LocationFloatingButtons extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           FloatingActionButton(
-            onPressed: () {
-              mapController.zoomOut();
+            onPressed: () async {
+              double zoom = await mapController.getZoom();
+              if (zoom > 6) {
+                mapController.zoomOut();
+              }
             },
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             elevation: 10.0,

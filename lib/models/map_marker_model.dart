@@ -49,24 +49,3 @@ Dio dio = Dio();
 bool error = false; //for error status
 String errMsg = ""; //to assing any error message from API/runtime
 late Map<String, dynamic> apiData; //for decoded JSON data
-
-Future<List<MapMarker>> getData(
-    double longitude, double latitude, double zoom) async {
-  if (defaultTargetPlatform == TargetPlatform.android ||
-      defaultTargetPlatform == TargetPlatform.iOS) {
-    await Geolocator.checkPermission();
-  }
-  String serverUrl = AppConstants.serverUrl;
-  final String locale = await LanguageService.getLanguage() ?? 'en';
-  String url =
-      '${serverUrl}masters?lng=$longitude&lat=$latitude&zoom=$zoom&page=1&locale=$locale';
-
-  Response response = await dio.get(url);
-  apiData = response.data; //get JSON decoded data from response
-
-  var tagObjsJson = apiData["data"] as List;
-  List<MapMarker> tagObjs =
-      tagObjsJson.map((tagJson) => MapMarker.fromJson(tagJson)).toList();
-
-  return tagObjs;
-}
