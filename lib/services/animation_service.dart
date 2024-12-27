@@ -21,7 +21,8 @@ class AnimationService {
       mapController.move(
           LatLng(latTween.evaluate(animationController),
               lngTween.evaluate(animationController)),
-          zoomTween.evaluate(animationController));
+          zoomTween.evaluate(animationController),
+          offset: const Offset(0, -100));
     });
 
     animationController.forward(from: 0);

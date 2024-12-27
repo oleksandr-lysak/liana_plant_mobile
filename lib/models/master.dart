@@ -1,50 +1,57 @@
+import 'package:dio/dio.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:liana_plant/models/service.dart';
+
 class Master {
   final int id;
   final String name;
   final String phone;
-  final String? address;
-  final double latitude;
-  final double longitude;
-  final String? description;
-  final int? age;
-  final String? photo;
+  final String address;
+  final LatLng location;
+  final String description;
+  final double rating;
+  final String photo;
   final int specialityId;
-  List<int> specialities;
+  List<Service> services;
+  bool available = false;
 
   Master({
     required this.id,
     required this.name,
     required this.phone,
-    this.address,
-    required this.latitude,
-    required this.longitude,
-    this.description,
-    this.age,
-    this.photo,
+    required this.address,
+    required this.location,
+    required this.description,
+    required this.rating,
+    required this.photo,
     required this.specialityId,
-    this.specialities = const [],
+    this.services = const [],
+    required this.available,
   });
 
   // Створення об'єкта Master з JSON
   factory Master.fromJson(Map<String, dynamic> json) {
+    double lng = json['longitude'] is double
+        ? json['longitude']
+        : double.parse(json['longitude'].toString());
+    double lat = json['latitude'] is double
+        ? json['latitude']
+        : double.parse(json['latitude'].toString());
     return Master(
       id: json['id'] ?? 0,
       name: json['name'],
       phone: json['phone'],
       address: json['address'],
-      latitude: json['latitude'] is double
-          ? json['latitude']
-          : double.parse(json['latitude'].toString()),
-      longitude: json['longitude'] is double
-          ? json['longitude']
-          : double.parse(json['longitude'].toString()),
+      location: LatLng(lat, lng),
       description: json['description'],
-      photo: json['photo'],
-      specialityId: json['speciality_id'],
-      age: json['age'],
-      specialities: json['specialities'] != null
-          ? List<int>.from(json['specialities'])
+      photo: json['main_photo'],
+      specialityId: json['main_service_id'],
+      rating: double.parse(json['rating'].toString()),
+      services: json['services'] != null
+          ? List<Service>.from(
+              json['services'].map((service) => Service.fromJson(service)))
           : [],
+      available: json['available'] ?? false,
     );
   }
 
@@ -55,13 +62,20 @@ class Master {
       'name': name,
       'phone': phone,
       'address': address,
-      'latitude': latitude,
-      'longitude': longitude,
+      'latitude': location.latitude,
+      'longitude': location.longitude,
       'description': description,
-      'age': age,
+      'rating': rating,
       'photo': photo,
       'speciality_id': specialityId,
-      'specialities': specialities,
+      'services': services,
     };
   }
 }
+
+late Response response;
+Dio dio = Dio();
+
+bool error = false; //for error status
+String errMsg = ""; //to assing any error message from API/runtime
+late Map<String, dynamic> apiData; //for decoded JSON data

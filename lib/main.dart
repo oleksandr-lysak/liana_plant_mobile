@@ -25,6 +25,7 @@ import 'classes/app_scroll_behavior.dart';
 import 'classes/app_themes.dart';
 import 'firebase_options.dart';
 import 'widgets/custom_bottom_navigation_bar.dart';
+import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 
 void main() async {
   FlutterError.onError = (FlutterErrorDetails details) {
@@ -46,6 +47,13 @@ void main() async {
   String? savedLanguage = await LanguageService.getLanguage();
   final tokenService = TokenService();
   final token = await tokenService.getToken();
+  Object? initErr;
+  try {
+    await FMTCObjectBoxBackend().initialise();
+    await const FMTCStore('mapStore').manage.create();
+  } catch (err) {
+    initErr = err;
+  }
   runApp(
     MultiProvider(
       providers: [

@@ -3,8 +3,8 @@ import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:liana_plant/constants/app_constants.dart';
 import 'package:liana_plant/constants/styles.dart';
 
-import '../../../models/master.dart';
-import '../../booking/booking_page.dart';
+import '../models/master.dart';
+import '../pages/booking/booking_page.dart';
 
 class MapCard extends StatelessWidget {
   const MapCard({super.key, required this.item});
@@ -72,7 +72,7 @@ class MapCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    item.phone.toString(),
+                    item.phone,
                     style: TextStyle(
                       fontSize: 14,
                       color: Theme.of(context).focusColor,

@@ -34,7 +34,7 @@ class SummaryInfoPageState extends State<SummaryInfoPage>
   String? _phone;
   String? _name;
   String? _description;
-  int? _specialtyId;
+  int? _serviceId;
   String? _photoId;
   String? _address;
   String? _placeId;
@@ -60,7 +60,7 @@ class SummaryInfoPageState extends State<SummaryInfoPage>
         _phone = args[1] as String?;
         _name = args[2] as String?;
         _description = args[3] as String?;
-        _specialtyId = args[4] as int?;
+        _serviceId = args[4] as int?;
         _photoId = args[5] as String?;
       }
       initData();
@@ -85,8 +85,8 @@ class SummaryInfoPageState extends State<SummaryInfoPage>
     if (_photoId != null) {
       await _getPhotoFromGallery(_photoId!);
     }
-    if (_specialtyId != null) {
-      _service = await ServiceService.getServiceById(_specialtyId!);
+    if (_serviceId != null) {
+      _service = await ServiceService.getServiceById(_serviceId!);
     }
     setState(() {
       isLoading = false;
@@ -299,7 +299,7 @@ class SummaryInfoPageState extends State<SummaryInfoPage>
       'phone': _phone,
       'name': _name,
       'description': _description,
-      'specialty_id': _specialtyId,
+      'service_id': _serviceId,
       'place_id': _placeId,
       'latitude': _selectedLocation!.latitude,
       'longitude': _selectedLocation!.longitude,

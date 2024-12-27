@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -78,7 +79,7 @@ class MapPickerPageState extends State<MapPickerPage> {
               initialCenter: _currentLocation ??
                   const LatLng(37.7749, -122.4194), // Default to San Francisco
               initialZoom: 25,
-              onPositionChanged: (MapPosition position, bool hasGesture) {
+              onPositionChanged: (MapCamera mapCamera, bool hasGesture) {
                 if (hasGesture) {
                   _updateSelectedLocation(); // Оновити вибрану локацію при русі карти
                 }
@@ -88,12 +89,13 @@ class MapPickerPageState extends State<MapPickerPage> {
               TileLayer(
                 urlTemplate: AppConstants().urlTemplate,
                 userAgentPackageName: 'com.it-pragmat.plant',
+                tileProvider: const FMTCStore('mapStore').getTileProvider(),
               ),
             ],
           ),
           Center(
-            child:
-                Icon(Icons.location_on, color: Theme.of(context).primaryColor, size: 40.0),
+            child: Icon(Icons.location_on,
+                color: Theme.of(context).primaryColor, size: 40.0),
           ),
           Positioned(
             left: MediaQuery.of(context).size.width * 0.01,

@@ -2,124 +2,56 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
-import 'package:flutter_osm_plugin/flutter_osm_plugin.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:liana_plant/models/cluster.dart';
-import 'package:liana_plant/services/log_service.dart';
-import '../../constants/app_constants.dart';
-import '../../models/map_marker_model.dart';
-import '../../services/language_service.dart';
-import '../../services/location_service.dart';
-import '../../widgets/loading.dart';
+import 'package:liana_plant/constants/app_constants.dart';
+import 'package:liana_plant/widgets/loading.dart';
+import 'package:liana_plant/widgets/map_card.dart';
+import 'package:liana_plant/services/location_service.dart';
+import 'package:liana_plant/services/animation_service.dart';
+import 'package:liana_plant/widgets/pulsaring_master.dart';
+import 'package:liana_plant/widgets/pulsating_icon.dart';
 import 'package:provider/provider.dart';
+
+import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
+import '../../classes/liana_marker.dart';
+import '../../models/master.dart';
 import '../../providers/theme_provider.dart';
-import 'map_view/location_floating_buttons.dart';
-import 'map_view/map_card.dart';
-import 'map_view/master_dialog.dart';
+import '../../services/language_service.dart';
 
 class MapView extends StatefulWidget {
-  const MapView({Key? key}) : super(key: key);
+  const MapView({super.key});
 
   @override
   MapViewState createState() => MapViewState();
 }
 
-class MapViewState extends State<MapView> with OSMMixinObserver {
-  MapController mapController = MapController(
-    initMapWithUserPosition: const UserTrackingOption(
-      unFollowUser: false,
-    ),
-  );
-  late PageController pageController;
-  List<MapMarker> mapMarkers = [];
-  LatLng currentLocation = const LatLng(0, 0);
+class MapViewState extends State<MapView> with TickerProviderStateMixin {
+  final pageController = PageController();
+  static final MapController mapController = MapController();
+  final DraggableScrollableController sheetController =
+      DraggableScrollableController();
+  late AnimationController _animationController;
+  List<Master> mapMasters = [];
+  List<LianaMarker> masters = [];
+  LatLng currentLocation = AppConstants.myLocation;
   int selectedIndex = 0;
   bool loading = true;
-  int currentPage = 1;
   int totalPages = 1;
-  bool moveMap = false;
-  List<Cluster> clusters = [];
+  int currentPage = 1;
 
   @override
   void initState() {
     super.initState();
-    pageController = PageController();
+    _animationController = AnimationController(
+        duration: const Duration(milliseconds: 1000), vsync: this);
 
-    _getCurrentLocation();
+    _loadMapData();
   }
 
-  Future<void> _getCurrentLocation() async {
-    try {
-      LatLng position = await LocationService.getCurrentLocation();
-
-      setState(() {
-        currentLocation = position;
-        mapController = mapController;
-        loading = false;
-      });
-
-      _loadMapData();
-    } catch (e, s) {
-      LogService.log(s.toString());
-      LogService.log('Error getting current location: $e');
-    }
-  }
-
-  @override
-  void dispose() {
-    pageController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadMapData() async {
-    try {
-      final location = await LocationService.getCurrentLocation();
-      double zoom = await mapController.getZoom();
-
-      if (totalPages == 1) {
-        await _fetchMarkers(
-            location.longitude, location.latitude, currentPage, zoom);
-      }
-
-      if (totalPages > 1) {
-        List<Future<List<MapMarker>>> fetchRequests = [];
-
-        for (int page = 2; page <= totalPages; page++) {
-          fetchRequests
-              .add(getData(location.longitude, location.latitude, page, zoom));
-        }
-
-        List<List<MapMarker>> results = await Future.wait(fetchRequests);
-
-        for (var markers in results) {
-          mapMarkers.addAll(markers);
-        }
-      }
-
-      setState(() {
-        _addMarkersToMap(mapMarkers);
-        loading = false;
-      });
-    } catch (error) {
-      setState(() {
-        loading = false;
-      });
-    }
-  }
-
-  Future<void> _fetchMarkers(
-      double longitude, double latitude, int page, double zoom) async {
-    final markers = await getData(longitude, latitude, page, zoom);
-    setState(() {
-      mapMarkers.addAll(markers);
-      if (page == 1) {
-        totalPages = markers.isNotEmpty ? apiData["meta"]["last_page"] : 1;
-      }
-    });
-  }
-
-  Future<List<MapMarker>> getData(
+  Future<List<Master>> getData(
       double longitude, double latitude, int page, double zoom) async {
     if (defaultTargetPlatform == TargetPlatform.android ||
         defaultTargetPlatform == TargetPlatform.iOS) {
@@ -133,148 +65,134 @@ class MapViewState extends State<MapView> with OSMMixinObserver {
 
     Response response = await dio.get(url);
     apiData = response.data;
-    print('Got data from page $page');
     var tagObjsJson = apiData["data"] as List;
-    List<MapMarker> tagObjs =
-        tagObjsJson.map((tagJson) => MapMarker.fromJson(tagJson)).toList();
+    List<Master> tagObjs =
+        tagObjsJson.map((tagJson) => Master.fromJson(tagJson)).toList();
 
     return tagObjs;
   }
 
-  void _addMarkersToMap(List<MapMarker> markers) async {
-    double zoom = await mapController.getZoom();
-    BoundingBox visibleBounds = await mapController.bounds;
-    clusters = Cluster.createClusters(markers, zoom, visibleBounds);
-    for (var cluster in clusters) {
-      int markerCount = cluster.markers.length;
-      if (cluster.markers.length > 1) {
-        Color gradientColor = Theme.of(context).primaryColor;
-        if (cluster.markers.length > 100) {
-          gradientColor = Colors.green;
-        } else if (cluster.markers.length > 50) {
-          gradientColor = Colors.red;
-        } else if (cluster.markers.length > 20) {
-          gradientColor = Colors.orange;
-        }
-        RadialGradient gradient = RadialGradient(
-          colors: [
-            gradientColor.withOpacity(1), // Основний колір
-            gradientColor.withOpacity(0.0), // Прозорий колір для розмивання
-          ],
-          radius: 1.0,
-        );
-        print('Adding cluster marker, lat: ${cluster.position.latitude}'
-            'lng: ${cluster.position.longitude}, '
-            'count: ${cluster.markers.length}');
+  Future<void> _loadMapData() async {
+    final location = await LocationService.getCurrentLocation();
+    double zoom = 13;
 
-        mapController.addMarker(
-          GeoPoint(
-              latitude: cluster.position.latitude,
-              longitude: cluster.position.longitude),
-          markerIcon: MarkerIcon(
-            iconWidget: GestureDetector(
-              onTap: () {
-                _onClusterTap(cluster);
-              },
-              child: Container(
-                width: 50,
-                height: 50,
-                padding: const EdgeInsets.all(2.0),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: gradient,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 50.0,
-                      spreadRadius: 4.0,
-                    ),
-                  ],
-                ),
-                alignment: Alignment.center, // Центрує текст
-                child: Text(
-                  '$markerCount',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 10),
-                ),
-              ),
-            ),
-          ),
-        );
-      } else {
-        // Відобразити одиночний маркер
-        var marker = cluster.markers.first;
-        mapController.addMarker(
-          GeoPoint(
-            latitude: marker.location!.latitude,
-            longitude: marker.location!.longitude,
-          ),
-          markerIcon: MarkerIcon(
-            iconWidget: GestureDetector(
-              onTap: () {
-                _onMarkerTap(
-                    markers.indexOf(marker)); // Взаємодія з одиночним маркером
-              },
-              child: Icon(
-                Icons.location_on,
-                color: Theme.of(context).primaryColor,
-                size: 34,
-              ),
-            ),
-          ),
-        );
+    // Отримання даних для першої сторінки
+    final stopwatch = Stopwatch()..start();
+    if (totalPages >= 1) {
+      await _fetchMarkers(
+        location.longitude,
+        location.latitude,
+        currentPage,
+        zoom,
+        updateImmediately: true, // Показати маркери першої сторінки
+      );
+    }
+    stopwatch.stop();
+
+    // Логування часу у мілісекундах
+    print('Виконання зайняло: ${stopwatch.elapsedMilliseconds} мс');
+
+    // Отримання даних для наступних сторінок асинхронно
+    if (totalPages > 1) {
+      List<Future<List<Master>>> fetchRequests = [];
+
+      for (int page = 2; page <= totalPages; page++) {
+        fetchRequests
+            .add(getData(location.longitude, location.latitude, page, zoom));
       }
+
+      List<List<Master>> results = await Future.wait(fetchRequests);
+
+      // Додавання даних з інших сторінок
+      setState(() {
+        for (var masters in results) {
+          mapMasters.addAll(masters);
+        }
+        _createMarkers();
+      });
+    } else {
+      // Якщо лише одна сторінка
+      setState(() {
+        loading = false;
+      });
     }
   }
 
-  void _onClusterTap(Cluster cluster) async {
-    // Обробка натиску на кластер
-    // Виберіть окремі маркери з кластера
-    mapController.zoomIn();
+  Future<void> _fetchMarkers(
+      double longitude, double latitude, int page, double zoom,
+      {bool updateImmediately = false}) async {
+    final masters = await getData(longitude, latitude, page, zoom);
+    setState(() {
+      mapMasters.addAll(masters);
+      if (page == 1) {
+        totalPages = masters.isNotEmpty ? apiData["meta"]["last_page"] : 1;
+      }
 
-    await mapController.removeMarker(GeoPoint(
-        latitude: cluster.position.latitude,
-        longitude: cluster.position.longitude));
+      // Оновлюємо маркери та показуємо мапу після першої сторінки
+      if (updateImmediately) {
+        _createMarkers();
+        loading = false; // Припускаємо, що перша сторінка завантажена
+      }
+    });
+  }
 
-    for (var marker in cluster.markers) {
-      await mapController.addMarker(
-        GeoPoint(
-          latitude: marker.location!.latitude,
-          longitude: marker.location!.longitude,
-        ),
-        markerIcon: MarkerIcon(
-          iconWidget: Icon(
-            Icons.location_on,
-            color: Theme.of(context).primaryColor,
-            size: 34,
+  void _createMarkers() {
+    masters.clear();
+    for (var master in mapMasters) {
+      masters.add(
+        LianaMarker(
+          height: 40,
+          width: 40,
+          point: master.location,
+          master: master,
+          child: GestureDetector(
+            onTap: () {
+              int index = mapMasters.indexOf(master);
+              _onMarkerTap(index);
+            },
+            child: PulsatingMaster(master: master),
           ),
         ),
       );
     }
-    setState(() {});
   }
 
-  void _onMarkerTap(int index) async {
-    selectedIndex = index;
-    currentLocation = mapMarkers[index].location ?? AppConstants.myLocation;
-    if (moveMap) {
-      await mapController.moveTo(
-        GeoPoint(
-            latitude: currentLocation.latitude,
-            longitude: currentLocation.longitude),
-        animate: true,
-      );
+  void _onMarkerTap(int index) {
+    setState(() {
+      selectedIndex = index;
+      currentLocation = mapMasters[index].location;
+    });
 
-      setState(() {});
-    }
+    AnimationService.animatedMapMove(
+      mapController,
+      _animationController,
+      currentLocation,
+      mapController.camera.zoom,
+    );
+    pageController.animateToPage(index,
+        duration: const Duration(milliseconds: 500), curve: Curves.ease);
+  }
+
+  void _moveToCurrentLocation() {
+    AnimationService.animatedMapMove(
+      mapController,
+      _animationController,
+      currentLocation,
+      18,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    // Отримуємо поточну тему
+    ThemeData currentTheme =
+        Provider.of<ThemeProvider>(context, listen: true).themeData;
+
+    String urlTemplate = AppConstants().urlTemplate;
     return loading
-        ? const Center(child: Loading())
+        ? const Center(
+            child: Loading(),
+          )
         : Scaffold(
             appBar: AppBar(
               backgroundColor: Theme.of(context).primaryColor,
@@ -292,45 +210,138 @@ class MapViewState extends State<MapView> with OSMMixinObserver {
                 ),
               ],
             ),
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             body: Stack(
               children: [
-                OSMFlutter(
-                  controller: mapController,
-                  osmOption: const OSMOption(
-                    enableRotationByGesture: false,
-                    showZoomController: true,
+                FlutterMap(
+                  mapController: mapController,
+                  options: MapOptions(
+                    minZoom: 2,
+                    maxZoom: 18,
+                    initialZoom: 11,
+                    initialCenter: currentLocation,
                   ),
-                  onGeoPointClicked: (p0) {
-                    _handleGeoPointClick(p0);
+                  children: [
+                    TileLayer(
+                      urlTemplate: urlTemplate,
+                      userAgentPackageName: 'com.it-pragmat.plant',
+                      tileProvider:
+                          const FMTCStore('mapStore').getTileProvider(),
+                    ),
+                    MarkerClusterLayerWidget(
+                      options: MarkerClusterLayerOptions(
+                        maxClusterRadius: 100,
+                        size: const Size(80, 80),
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.all(50),
+                        maxZoom: 15,
+                        showPolygon: false,
+                        markers: masters,
+                        builder: (context, masters) {
+                          return SizedBox(
+                            width: 120,
+                            height: 120,
+                            child: Stack(
+                              children: [
+                                Positioned.fill(
+                                  child: PulsatingIcon(
+                                    markers: masters.cast<LianaMarker>(),
+                                  ),
+                                ),
+                                // Віджет для тексту
+                                Center(
+                                  child: Text(
+                                    '${masters.length}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                DraggableScrollableSheet(
+                  controller: sheetController,
+                  maxChildSize: 0.37,
+                  initialChildSize: 0.37,
+                  minChildSize: 0.07,
+                  builder: (BuildContext context, scrollController) {
+                    return CustomScrollView(
+                      controller: scrollController,
+                      slivers: [
+                        SliverToBoxAdapter(
+                          child: Container(
+                            height: MediaQuery.of(context).size.height * 0.3,
+                            child: PageView.builder(
+                              controller: pageController,
+                              onPageChanged: (value) {
+                                _onMarkerTap(value);
+                              },
+                              itemCount: mapMasters.length,
+                              itemBuilder: (_, index) {
+                                return Stack(
+                                  children: [
+                                    MapCard(item: mapMasters[index]),
+                                    Positioned(
+                                      top:
+                                          20, // Висота, на якій розмістити полоску
+                                      left: 0,
+                                      right: 0,
+                                      child: Center(
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: Theme.of(context).hintColor,
+                                            borderRadius:
+                                                const BorderRadius.all(
+                                                    Radius.circular(10)),
+                                          ),
+                                          height: 4,
+                                          width: 40,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
                   },
-                  mapIsLoading: Loading(),
-                  onMapMoved: (geoPoint) async {
-                    if (geoPoint != null) {
-                      // List<GeoPoint> geoPoints = await mapController.geopoints;
-                      // mapController.removeMarkers(geoPoints);
-                      // _addMarkersToMap(mapMarkers);
-                    }
-                  },
-                  onMapIsReady: mapIsReady,
                 ),
                 Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 2,
-                  height: MediaQuery.of(context).size.height * 0.3,
-                  child: PageView.builder(
-                    controller: pageController,
-                    onPageChanged: (value) {
-                      setState(() {
-                        moveMap = true;
-                      });
-                      _onMarkerTap(value);
-                      setState(() {
-                        moveMap = false;
-                      });
+                  right: 10,
+                  top: MediaQuery.of(context).size.height * 0.01,
+                  child: FloatingActionButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/map-picker');
                     },
-                    itemCount: mapMarkers.length,
-                    itemBuilder: (_, index) => MapCard(item: mapMarkers[index]),
+                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                    elevation: 10.0,
+                    child: Icon(Icons.add_location_alt_outlined,
+                        color: Theme.of(context).indicatorColor),
+                  ),
+                ),
+                Positioned(
+                  right: 10,
+                  bottom: MediaQuery.of(context).size.height * 0.3 +
+                      165, // Місце під кнопками zoom
+                  child: FloatingActionButton(
+                    onPressed: _moveToCurrentLocation,
+                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                    elevation: 10.0,
+                    child: Icon(
+                      Icons.my_location,
+                      color: Theme.of(context).indicatorColor,
+                    ), // Іконка для позиціювання на поточному положенні
                   ),
                 ),
                 Positioned(
@@ -339,12 +350,9 @@ class MapViewState extends State<MapView> with OSMMixinObserver {
                   child: Column(
                     children: [
                       FloatingActionButton(
-                        onPressed: () async {
-                          mapController.zoomIn();
-                          List<GeoPoint> geoPoints =
-                              await mapController.geopoints;
-                          mapController.removeMarkers(geoPoints);
-                          _addMarkersToMap(mapMarkers);
+                        onPressed: () {
+                          final zoom = mapController.camera.zoom + 1;
+                          mapController.move(mapController.camera.center, zoom);
                         },
                         backgroundColor:
                             Theme.of(context).scaffoldBackgroundColor,
@@ -354,15 +362,9 @@ class MapViewState extends State<MapView> with OSMMixinObserver {
                       ),
                       const SizedBox(height: 10),
                       FloatingActionButton(
-                        onPressed: () async {
-                          double zoom = await mapController.getZoom();
-                          if (zoom > 6) {
-                            mapController.zoomOut();
-                            List<GeoPoint> geoPoints =
-                                await mapController.geopoints;
-                            mapController.removeMarkers(geoPoints);
-                            _addMarkersToMap(mapMarkers);
-                          }
+                        onPressed: () {
+                          final zoom = mapController.camera.zoom - 1;
+                          mapController.move(mapController.camera.center, zoom);
                         },
                         backgroundColor:
                             Theme.of(context).scaffoldBackgroundColor,
@@ -373,60 +375,15 @@ class MapViewState extends State<MapView> with OSMMixinObserver {
                     ],
                   ),
                 ),
-                Positioned(
-                  right: 10,
-                  bottom: MediaQuery.of(context).size.height * 0.3 + 165,
-                  child: FloatingActionButton(
-                    onPressed: () {
-                      showMasterDialog(context);
-                    },
-                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                    elevation: 10.0,
-                    child: Icon(Icons.add_location_alt_outlined,
-                        color: Theme.of(context).indicatorColor),
-                  ),
-                ),
               ],
             ),
           );
   }
 
-  void _handleGeoPointClick(GeoPoint p0) async {
-    for (int i = 0; i < clusters.length; i++) {
-      Cluster cluster = clusters[i];
-      if (cluster.position.latitude == p0.latitude &&
-          cluster.position.longitude == p0.longitude) {
-        if (cluster.markers.length > 1) {
-          mapController.zoomIn();
-          List<GeoPoint> geoPoints = await mapController.geopoints;
-          mapController.removeMarkers(geoPoints);
-          _addMarkersToMap(mapMarkers);
-        }
-        break;
-      }
-    }
-    for (int j = 0; j < mapMarkers.length; j++) {
-      if (mapMarkers[j].location!.latitude == p0.latitude &&
-          mapMarkers[j].location!.longitude == p0.longitude) {
-        _onMarkerTap(j);
-        await pageController.animateToPage(j,
-            duration: const Duration(seconds: 1), curve: Curves.ease);
-        break;
-      }
-    }
-  }
-
-  mapIsReady(bool isReady) async {
-    // TODO: implement mapIsReady
-    if (isReady) {
-      mapController.moveTo(
-        GeoPoint(
-          latitude: currentLocation.latitude,
-          longitude: currentLocation.longitude,
-        ),
-        animate: true,
-      );
-      mapController.setZoom(zoomLevel: 6.0, stepZoom: 0.5);
-    }
+  @override
+  void dispose() {
+    _animationController.dispose();
+    pageController.dispose();
+    super.dispose();
   }
 }
