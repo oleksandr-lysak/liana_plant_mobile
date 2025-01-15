@@ -79,7 +79,7 @@ class AuthService {
     final tokenService = Provider.of<TokenService>(context, listen: false);
     final userService = Provider.of<UserService>(context, listen: false);
     await tokenService.saveToken(token);
-    User user = User.fromJson(response);
+    User user = User.fromJson(response['user']);
     await userService.saveUserData(user);
   }
 

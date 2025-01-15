@@ -7,6 +7,7 @@ import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:liana_plant/constants/app_constants.dart';
+import 'package:liana_plant/services/token_service.dart';
 import 'package:liana_plant/widgets/loading.dart';
 import 'package:liana_plant/widgets/map_card.dart';
 import 'package:liana_plant/services/location_service.dart';
@@ -60,8 +61,10 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
 
     String serverUrl = AppConstants.serverUrl;
     final String locale = await LanguageService.getLanguage() ?? 'en';
+    final tokenService = TokenService();
+    final token = await tokenService.getToken();
     String url =
-        '${serverUrl}masters?lng=$longitude&lat=$latitude&zoom=$zoom&page=$page&locale=$locale';
+        '${serverUrl}masters?lng=$longitude&lat=$latitude&zoom=$zoom&page=$page&locale=$locale?&token=$token';
 
     Response response = await dio.get(url);
     apiData = response.data;
@@ -277,7 +280,7 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                       controller: scrollController,
                       slivers: [
                         SliverToBoxAdapter(
-                          child: Container(
+                          child: SizedBox(
                             height: MediaQuery.of(context).size.height * 0.3,
                             child: PageView.builder(
                               controller: pageController,

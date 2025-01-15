@@ -63,6 +63,9 @@ void main() async {
         Provider<TokenService>(
           create: (context) => TokenService(),
         ),
+        Provider<UserService>(
+          create: (context) => UserService(),
+        ),
         ChangeNotifierProvider(
           create: (context) =>
               ThemeProvider(AppThemes.lightTheme), // Додано ThemeProvider
@@ -199,6 +202,7 @@ class MyAppState extends State<MyApp> {
             '/summary-info': (context) => const SummaryInfoPage(),
             '/home-page': (context) => const HomePage(),
             '/settings-page': (context) => const HomePage(),
+            //'/booking-page': (context) => const BookingPage(masterId: masterId, masterName: masterName)
           },
         );
       });

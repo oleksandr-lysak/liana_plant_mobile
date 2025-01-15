@@ -301,6 +301,7 @@ class SummaryInfoPageState extends State<SummaryInfoPage>
       'description': _description,
       'service_id': _serviceId,
       'place_id': _placeId,
+      'address': _address,
       'latitude': _selectedLocation!.latitude,
       'longitude': _selectedLocation!.longitude,
       'photo': photo,
