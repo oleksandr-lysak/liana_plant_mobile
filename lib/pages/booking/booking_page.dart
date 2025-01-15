@@ -65,16 +65,16 @@ class BookingPageState extends State<BookingPage> {
         });
       }
     });
-    FCMService.initializeFCM(onMessage: handleFCMMessage);
+    //FCMService.initializeFCM(onMessage: handleFCMMessage);
     initData();
   }
 
-  Future<void> handleFCMMessage(Map<String, dynamic> message) async {
-    // Обробка сповіщень та оновлення тайм слотів
-    setState(() {
-      fetchTimeSlots(); // Перезавантаження тайм слотів при отриманні сповіщення
-    });
-  }
+  // Future<void> handleFCMMessage(Map<String, dynamic> message) async {
+  //   // Обробка сповіщень та оновлення тайм слотів
+  //   setState(() {
+  //     fetchTimeSlots(); // Перезавантаження тайм слотів при отриманні сповіщення
+  //   });
+  // }
 
   Future<void> fetchTimeSlots() async {
     try {

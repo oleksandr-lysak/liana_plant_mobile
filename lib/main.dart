@@ -11,8 +11,10 @@ import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:liana_plant/pages/home/map_view.dart';
 import 'package:liana_plant/pages/settings/settings_page.dart';
 import 'package:liana_plant/providers/language_provider.dart';
+import 'package:liana_plant/providers/notification_provider.dart';
 import 'package:liana_plant/providers/service_provider.dart';
 import 'package:liana_plant/providers/theme_provider.dart';
+import 'package:liana_plant/services/fcm_service.dart';
 import 'package:liana_plant/services/language_service.dart';
 import 'package:liana_plant/services/log_service.dart';
 import 'package:liana_plant/services/api_services/service_service.dart';
@@ -40,9 +42,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting();
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+
+  await Firebase.initializeApp();
   final specialtyService = ServiceService();
   String? savedLanguage = await LanguageService.getLanguage();
   final tokenService = TokenService();
@@ -75,7 +76,8 @@ void main() async {
                   savedLanguage != null
                       ? Locale(savedLanguage)
                       : const Locale('en'),
-                ))
+                ),),
+        ChangeNotifierProvider(create: (_) => NotificationsProvider()),
       ],
       child: MyApp(savedLanguage: savedLanguage, token: token),
     ),
@@ -146,6 +148,7 @@ class MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    FCMService.initializeFCM(context: context);
     return Consumer<ThemeProvider>(builder: (context, themeProvider, child) {
       return Consumer<LanguageProvider>(
           builder: (context, languageProvider, child) {

@@ -7,6 +7,7 @@ import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:liana_plant/constants/app_constants.dart';
+import 'package:liana_plant/services/fcm_service.dart';
 import 'package:liana_plant/services/token_service.dart';
 import 'package:liana_plant/widgets/loading.dart';
 import 'package:liana_plant/widgets/map_card.dart';
@@ -19,6 +20,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import '../../classes/liana_marker.dart';
 import '../../models/master.dart';
+import '../../providers/notification_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../services/language_service.dart';
 
@@ -62,9 +64,10 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
     String serverUrl = AppConstants.serverUrl;
     final String locale = await LanguageService.getLanguage() ?? 'en';
     final tokenService = TokenService();
-    final token = await tokenService.getToken();
+    //final token = await tokenService.getToken();
+    final fcmToken = await FCMService.getToken();
     String url =
-        '${serverUrl}masters?lng=$longitude&lat=$latitude&zoom=$zoom&page=$page&locale=$locale?&token=$token';
+        '${serverUrl}masters?lng=$longitude&lat=$latitude&zoom=$zoom&page=$page&locale=$locale?&fcm_token=$fcmToken';
 
     Response response = await dio.get(url);
     apiData = response.data;
@@ -187,6 +190,7 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final notificationsProvider = Provider.of<NotificationsProvider>(context);
     // Отримуємо поточну тему
     ThemeData currentTheme =
         Provider.of<ThemeProvider>(context, listen: true).themeData;
@@ -241,6 +245,9 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                         showPolygon: false,
                         markers: masters,
                         builder: (context, masters) {
+                          int index = notificationsProvider.notifications.length-1;
+                          final notification = notificationsProvider.notifications[index];
+                          print(notification['title']);
                           return SizedBox(
                             width: 120,
                             height: 120,
