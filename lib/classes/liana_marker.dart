@@ -6,7 +6,7 @@ import 'package:liana_plant/models/master.dart';
 class LianaMarker extends Marker {
   final Master master;
 
-  LianaMarker({
+  const LianaMarker({
     required LatLng point,
     required Widget child,
     required this.master,

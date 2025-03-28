@@ -70,6 +70,7 @@ class AnimatedTextFieldState extends State<AnimatedTextField> {
                 cursorColor: Theme.of(context).primaryColor,
                 style: Theme.of(context).textTheme.titleMedium,
                 decoration: InputDecoration(
+                  fillColor: Theme.of(context).inputDecorationTheme.fillColor,
                   labelText: widget.labelText,
                   labelStyle: TextStyle(
                     color: Theme.of(context).primaryColor,
@@ -93,7 +94,7 @@ class AnimatedTextFieldState extends State<AnimatedTextField> {
             ),
             if (widget.controller.text.isNotEmpty)
               IconButton(
-                icon: const Icon(Icons.clear, color: Colors.white),
+                icon: const Icon(Icons.clear, color: Colors.black),
                 onPressed: () {
                   widget.controller.clear();
                   setState(() {});

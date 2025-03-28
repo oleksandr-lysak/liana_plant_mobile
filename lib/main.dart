@@ -1,7 +1,10 @@
+import 'dart:developer';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:liana_plant/constants/app_constants.dart';
+import 'package:liana_plant/models/user.dart';
 import 'package:liana_plant/pages/booking/booking_page.dart';
 import 'package:liana_plant/pages/create_master/summary_info_page.dart';
 import 'package:liana_plant/pages/home/home_page.dart';
@@ -25,7 +28,6 @@ import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'classes/app_scroll_behavior.dart';
 import 'classes/app_themes.dart';
-import 'firebase_options.dart';
 import 'widgets/custom_bottom_navigation_bar.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 
@@ -69,7 +71,7 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (context) =>
-              ThemeProvider(AppThemes.lightTheme), // Додано ThemeProvider
+              ThemeProvider(AppThemes.lightTheme),
         ),
         ChangeNotifierProvider(
             create: (context) => LanguageProvider(
@@ -106,7 +108,7 @@ class MyAppState extends State<MyApp> {
 
   void restartApp() {
     setState(() {
-      key = UniqueKey(); // Оновлюємо ключ, щоб перезавантажити дерево віджетів
+      key = UniqueKey();
     });
   }
 
@@ -123,10 +125,13 @@ class MyAppState extends State<MyApp> {
   Future<List<Widget>> setNavigationBar() async {
     List<Widget> pages;
     if (await isMaster()) {
+      User? user = await UserService().getUser();
+      int masterId = user!.master!.id;
+      String masterName = user.master!.name;
       pages = [
-        const BookingPage(
-          masterId: 0,
-          masterName: '',
+        BookingPage(
+          masterId: masterId,
+          masterName: masterName,
         ),
         const MapView(),
         const SettingsPage(),
@@ -143,7 +148,7 @@ class MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    pagesFuture = setNavigationBar(); // ініціалізуємо Future
+    pagesFuture = setNavigationBar();
   }
 
   @override
@@ -176,19 +181,19 @@ class MyAppState extends State<MyApp> {
             ),
           ],
           home: FutureBuilder<List<Widget>>(
-            future: pagesFuture, // викликаємо Future
+            future: pagesFuture,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
                     child:
-                        CircularProgressIndicator()); // Індикатор завантаження
+                        CircularProgressIndicator());
               } else if (snapshot.hasError) {
                 return Center(child: Text('Error: ${snapshot.error}'));
               }
 
-              List<Widget> pages = snapshot.data!; // Отримуємо сторінки
+              List<Widget> pages = snapshot.data!;
               return Scaffold(
-                body: pages[_selectedIndex], // Інші сторінки не змінюються
+                body: pages[_selectedIndex],
                 bottomNavigationBar: CustomBottomNavigationBar(
                   selectedIndex: _selectedIndex,
                   themeProvider: themeProvider,
@@ -205,7 +210,18 @@ class MyAppState extends State<MyApp> {
             '/summary-info': (context) => const SummaryInfoPage(),
             '/home-page': (context) => const HomePage(),
             '/settings-page': (context) => const HomePage(),
-            //'/booking-page': (context) => const BookingPage(masterId: masterId, masterName: masterName)
+          },
+          onGenerateRoute: (settings) {
+            if (settings.name == '/booking-page') {
+              final args = settings.arguments as Map<String, dynamic>;
+              return MaterialPageRoute(
+                builder: (context) => BookingPage(
+                  masterId: args['masterId'],
+                  masterName: args['masterName'],
+                ),
+              );
+            }
+            return null;
           },
         );
       });

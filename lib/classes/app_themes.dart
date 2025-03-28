@@ -201,7 +201,7 @@ class AppThemes {
       ),
     ),
     inputDecorationTheme: const InputDecorationTheme(
-      fillColor: Color(0xFFF5F5F5), // Світлий фон для текстових полів
+      fillColor: Color.fromARGB(255, 235, 234, 234), // Світлий фон для текстових полів
       filled: true,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(8.0)),

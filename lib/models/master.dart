@@ -44,9 +44,9 @@ class Master {
       address: json['address'],
       location: LatLng(lat, lng),
       description: json['description'],
-      photo: json['main_photo'],
-      specialityId: json['main_service_id'],
-      rating: double.parse(json['rating'].toString()),
+      photo: json['main_photo']??'',
+      specialityId: json['main_service_id']??0,
+      rating: double.parse((json['rating']??0).toString()),
       services: json['services'] != null
           ? List<Service>.from(
               json['services'].map((service) => Service.fromJson(service)))

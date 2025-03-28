@@ -107,12 +107,20 @@ class MasterCreationPageState extends State<MasterCreationPage> {
             children: [
               AnimatedTextField(
                 controller: _phoneController,
-                labelText: FlutterI18n.translate(context, 'phone'),
+                labelText: '${FlutterI18n.translate(context, 'phone')} (+380 xxx xx xx)',
                 hintText: FlutterI18n.translate(context, 'enter_phone'),
                 keyboardType: TextInputType.phone,
-                validator: (value) => value?.isEmpty ?? true
-                    ? FlutterI18n.translate(context, 'required')
-                    : null,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return FlutterI18n.translate(context, 'required');
+                  }
+                  // Регулярний вираз для валідації українського мобільного номера
+                  final RegExp phoneRegExp = RegExp(r'^\+380\d{9}$');
+                  if (!phoneRegExp.hasMatch(value)) {
+                    return FlutterI18n.translate(context, 'invalid_phone');
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 20),
               AnimatedTextField(

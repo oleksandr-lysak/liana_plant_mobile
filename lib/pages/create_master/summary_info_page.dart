@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
-import 'package:liana_plant/constants/app_constants.dart';
+import 'package:liana_plant/models/master.dart';
 import 'package:liana_plant/models/service.dart';
+import 'package:liana_plant/models/user.dart';
 import 'package:liana_plant/services/api_services/auth_service.dart';
 import 'package:liana_plant/services/location_service.dart';
 import 'package:liana_plant/services/api_services/service_service.dart';
+import 'package:liana_plant/services/user_service.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:liana_plant/constants/styles.dart';
 import 'package:liana_plant/widgets/loading.dart';
@@ -310,10 +312,28 @@ class SummaryInfoPageState extends State<SummaryInfoPage>
       isLoading = true;
     });
     await AuthService().register(request, context);
-    Navigator.pushReplacementNamed(
+    User? user = await UserService().getUser();
+    if (user != null) {
+      if (user.master != null) {
+        Master master = user.master!;
+        int? masterId = master.id;
+        String masterName = master.name;
+        Navigator.popAndPushNamed(
+          // ignore: use_build_context_synchronously
+          context,
+          '/booking-page',
+          arguments: {
+            'masterId': masterId,
+            'masterName': masterName,
+          },
+        );
+      }
+    }
+
+    Navigator.popAndPushNamed(
       // ignore: use_build_context_synchronously
       context,
-      '/booking-page',
+      '/home-page',
     );
   }
 

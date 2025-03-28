@@ -31,7 +31,7 @@
     "search": "Search",
     "search_placeholder": "Search in this area",
     "select_location": "Select Location",
-    "book_appointment": "Register",
+    "book_appointment": "Book",
     "master_dialog": {
       "title": "Create master or login?",
       "create": "Create",

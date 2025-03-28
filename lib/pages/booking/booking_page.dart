@@ -1,11 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:intl/intl.dart';
-import 'package:liana_plant/constants/app_constants.dart';
 import 'package:liana_plant/models/service.dart';
-import 'package:liana_plant/models/user.dart';
 import 'package:liana_plant/services/api_services/auth_service.dart';
 import 'package:liana_plant/services/api_services/service_service.dart';
 import 'package:liana_plant/services/language_service.dart';
@@ -17,7 +13,6 @@ import 'package:provider/provider.dart';
 import '../../models/slot.dart';
 import '../../providers/theme_provider.dart';
 import '../../services/api_services/slot_service.dart';
-import '../../services/fcm_service.dart';
 import '../../services/token_service.dart';
 
 class BookingPage extends StatefulWidget {
@@ -65,16 +60,9 @@ class BookingPageState extends State<BookingPage> {
         });
       }
     });
-    //FCMService.initializeFCM(onMessage: handleFCMMessage);
     initData();
   }
 
-  // Future<void> handleFCMMessage(Map<String, dynamic> message) async {
-  //   // Обробка сповіщень та оновлення тайм слотів
-  //   setState(() {
-  //     fetchTimeSlots(); // Перезавантаження тайм слотів при отриманні сповіщення
-  //   });
-  // }
 
   Future<void> fetchTimeSlots() async {
     try {
@@ -288,7 +276,6 @@ class BookingPageState extends State<BookingPage> {
       } else {
         // Обробка невірного коду
         // Наприклад, показати повідомлення про помилку або повернути користувача до діалогу
-        print("SMS verification failed");
       }
     }
   }

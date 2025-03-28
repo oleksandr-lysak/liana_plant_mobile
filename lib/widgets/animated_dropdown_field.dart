@@ -59,7 +59,7 @@ class AnimatedDropdownFieldState extends State<AnimatedDropdownField> {
           borderRadius: BorderRadius.circular(14.0),
           border: Border.all(
             color: _isFocused
-                ? Theme.of(context).primaryColor
+                ? Theme.of(context).hoverColor
                 : Theme.of(context).hoverColor,
             width: 1.5,
           ),

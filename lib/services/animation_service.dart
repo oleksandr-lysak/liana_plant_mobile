@@ -22,7 +22,7 @@ class AnimationService {
           LatLng(latTween.evaluate(animationController),
               lngTween.evaluate(animationController)),
           zoomTween.evaluate(animationController),
-          offset: const Offset(0, -100));
+          offset: const Offset(0, 0));
     });
 
     animationController.forward(from: 0);

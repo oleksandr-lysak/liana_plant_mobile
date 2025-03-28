@@ -101,17 +101,36 @@ class MapPickerPageState extends State<MapPickerPage> {
             left: MediaQuery.of(context).size.width * 0.01,
             right: MediaQuery.of(context).size.width * 0.01,
             bottom: MediaQuery.of(context).size.height * 0.02,
-            child: Container(
-              color: Theme.of(context).primaryColor,
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                _selectedLocation != null
-                    ? 'Latitude: ${_selectedLocation!.latitude.toStringAsFixed(6)}, Longitude: ${_selectedLocation!.longitude.toStringAsFixed(6)}'
-                    : 'Select a location',
-                style: const TextStyle(fontSize: 16, color: Colors.black),
-              ),
-            ),
+            child: ElevatedButton(
+                onPressed: () => {
+                      Navigator.pushNamed(
+                        context,
+                        '/create-master',
+                        arguments: _selectedLocation,
+                      )
+                    },
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).cardColor,
+                    padding: const EdgeInsets.all(16.0)),
+                child: Text('${FlutterI18n.translate(context, 'next')} ...',
+                    style: TextStyle(
+                        color: Theme.of(context).primaryColor, fontSize: 24))),
           ),
+          // Positioned(
+          //   left: MediaQuery.of(context).size.width * 0.01,
+          //   right: MediaQuery.of(context).size.width * 0.01,
+          //   top: MediaQuery.of(context).size.height * 0.02,
+          //   child: Container(
+          //     color: Theme.of(context).primaryColor,
+          //     padding: const EdgeInsets.all(8.0),
+          //     child: Text(
+          //       _selectedLocation != null
+          //           ? 'Latitude: ${_selectedLocation!.latitude.toStringAsFixed(6)}, Longitude: ${_selectedLocation!.longitude.toStringAsFixed(6)}'
+          //           : 'Select a location',
+          //       style: const TextStyle(fontSize: 16, color: Colors.black),
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );

@@ -8,7 +8,8 @@ class UserService {
   final String _userKey = 'user';
   Future<void> saveUserData(User user) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_userKey, jsonEncode(user.toJson()));
+    String userJson = jsonEncode(user.toJson());
+    await prefs.setString(_userKey, userJson);
   }
 
   // Отримання токену

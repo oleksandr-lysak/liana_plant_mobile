@@ -24,16 +24,11 @@ class SlotService {
   Future<void> bookSlotFromClient(String name, String phone, bool isBooked,
       DateTime dateTime, Service service, int masterId) async {
     final response =
-        await apiService.postRequest('time-slots/store-from-client/$masterId', {
+        await apiService.postRequest('appointments/book', {
       'master_id': masterId,
-      'date': dateTime.toString(),
-      'time':
-          "${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}",
-      'is_booked': true,
-      'client_name': name,
+      'start_time': dateTime.toString(),
       'client_phone': phone,
       'service_id': service.id,
-      'source': 'client',
       'duration': 60,
     });
   }

@@ -15,7 +15,7 @@ class AuthService {
 
   Future<bool> confirmLogin(
       String phone, int code, BuildContext context) async {
-    try {
+
       final response = await apiService
           .postRequest('auth/verify-code', {'sms_code': code, 'phone': phone});
 
@@ -61,14 +61,6 @@ class AuthService {
       UserService userService = UserService();
       await userService.saveUserData(user);
       return true;
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content:
-                Text(FlutterI18n.translate(context, 'system.filed_verify'))),
-      );
-      return false;
-    }
   }
 
   Future<void> register(
@@ -102,7 +94,7 @@ class AuthService {
     Map<String, dynamic> data = {
       'id': response['user']['id'],
       'name': response['user']['name'],
-      'phone': response['user']['client_data']['phone'],
+      'phone': response['user']['client']['phone'],
     };
     User user = User.fromJson(data);
     await userService.saveUserData(user);

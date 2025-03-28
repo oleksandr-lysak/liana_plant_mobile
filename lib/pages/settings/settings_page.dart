@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:liana_plant/constants/app_constants.dart';
-import 'package:liana_plant/constants/styles.dart';
 import 'package:liana_plant/main.dart';
 import 'package:liana_plant/services/user_service.dart';
 import 'package:liana_plant/widgets/buttons.dart';

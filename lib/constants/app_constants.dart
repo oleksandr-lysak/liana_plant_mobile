@@ -12,8 +12,6 @@ class AppConstants {
   String mapBoxStyleId = mapBoxStyleIdLight;
   String get urlTemplate =>
       "https://api.mapbox.com/styles/v1/rotting/$mapBoxStyleId/tiles/256/{z}/{x}/{y}@2x?access_token=$mapBoxAccessToken";
-  // String get urlTemplate =>
-  //     "https://api.mapbox.com/styles/v1/rotting/$mapBoxStyleIdDark/tiles/256/{z}/{x}/{y}@2x?access_token=$mapBoxAccessToken";
 
 
   static const String serverUrl = 'http://10.0.2.2:8002/api/';
