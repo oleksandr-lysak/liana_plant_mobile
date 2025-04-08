@@ -35,7 +35,7 @@
     "search_placeholder": "Шукати в цій області",
     "select_location": "Виберіть розташування",
     "book_appointment": "Записатись",
-    "master_dialog":{
+    "master_dialog": {
       "title": "Створити майстра чи увійти?",
       "create": "Створити",
       "login": "Увійти",
@@ -51,5 +51,44 @@
   },
   "settings_view": {
     "logout": "Logout"
+  },
+  "booking": {
+    "name": "Ім'я",
+    "phone": "Телефон",
+    "select_service": "Виберіть послугу",
+    "input_details": "Введіть дані"
+  },
+  "data": {
+    "services": {
+      "hair_styling": "Укладання волосся",
+      "hair_cutting": "Стрижка волосся",
+      "hair_coloring": "Фарбування волосся",
+      "makeup": "Макіяж",
+      "nail_service": "Нігтьовий сервіс",
+      "skin_care": "Догляд за шкірою",
+      "massage": "Масаж",
+      "hair_removal": "Видалення волосся",
+      "tattoo": "Татуювання",
+      "piercing": "Пірсинг",
+      "cosmetics_selection": "Підбір косметики",
+      "cosmetology": "Косметологія",
+      "microdermabrasion": "Мікродермабразія",
+      "mesotherapy": "Мезотерапія",
+      "biorevitalization": "Біоревіталізація",
+      "plasmolifting": "Плазмоліфтинг",
+      "thread_lifting": "Нитковий ліфтинг",
+      "contour_plastic": "Контурна пластика",
+      "botulinum_therapy": "Ботулінотерапія",
+      "fillers": "Філери",
+      "laser_epilation": "Лазерна епіляція",
+      "laser_rejuvenation": "Лазерне омолодження",
+      "laser_capillaries": "Лазерне видалення капілярів",
+      "laser_pigmentation": "Лазерне видалення пігментації",
+      "laser_tattoo_removal": "Лазерне видалення татуювань",
+      "laser_resurfacing": "Лазерне шліфування",
+      "laser_lipolysis": "Лазерний ліполіз",
+      "laser_photorejuvenation": "Лазерне фотомолодження",
+      "laser_therapy": "Лазерна терапія"
+    }
   }
 }

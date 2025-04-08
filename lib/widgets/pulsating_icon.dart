@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:liana_plant/classes/liana_marker.dart';
 import 'package:liana_plant/providers/theme_provider.dart';

@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:intl/intl.dart';
@@ -199,7 +201,7 @@ class BookingPageState extends State<BookingPage> {
           builder: (context, setState) {
             return AlertDialog(
               backgroundColor: Theme.of(context).colorScheme.surface,
-              title: Text(FlutterI18n.translate(context, 'input_details')),
+              title: Text(FlutterI18n.translate(context, 'booking.input_details')),
               content: SingleChildScrollView(
                 child: Column(
                   children: [
@@ -215,7 +217,7 @@ class BookingPageState extends State<BookingPage> {
                       keyboardType: TextInputType.number,
                     ),
                     const SizedBox(height: 20),
-                    Text(FlutterI18n.translate(context, 'select_service')),
+                    Text(FlutterI18n.translate(context, 'booking.select_service')),
                     const SizedBox(height: 10),
                     // Додавання RadioListTile для вибору лише однієї спеціальності
                     Column(
@@ -343,7 +345,7 @@ class BookingPageState extends State<BookingPage> {
 
                     if (isVerified) {
                       SlotService slotService = SlotService();
-                      await slotService.bookSlotFromClient(
+                      ResultBookSlot result = await slotService.bookSlotFromClient(
                         name,
                         phoneNumber,
                         true,
@@ -351,6 +353,30 @@ class BookingPageState extends State<BookingPage> {
                         specialty,
                         widget.masterId,
                       );
+                      if (result.success) {
+                        setState(() {
+                          _updateSlotDuration(
+                            slotIndex,
+                            const Duration(minutes: 60),
+                            data: {
+                              'name': name,
+                              'phone': phoneNumber,
+                              'specialty': specialty,
+                            },
+                          );
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(result.message),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(result.message),
+                          ),
+                        );
+                      }
                       Navigator.of(context).pop(true);
                     } else {
                       smsCodeController.text = '';
@@ -367,7 +393,7 @@ class BookingPageState extends State<BookingPage> {
             );
           },
         ) ??
-        false; // Якщо діалог було закрито, повертаємо false
+        false;
   }
 
   Future<void> _showDurationDialog(int index) async {
@@ -377,7 +403,7 @@ class BookingPageState extends State<BookingPage> {
         Duration? initialDuration = slots[index].duration;
         return AlertDialog(
           backgroundColor: Theme.of(context).colorScheme.surface,
-          title: Text(FlutterI18n.translate(context, 'input_details')),
+          title: Text(FlutterI18n.translate(context, 'booking.input_details')),
           content: Column(
             children: [
               AnimatedTextField(

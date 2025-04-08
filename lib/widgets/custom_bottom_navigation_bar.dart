@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
-import 'package:liana_plant/models/user.dart';
 import 'package:liana_plant/services/user_service.dart';
 import '../providers/theme_provider.dart';
 

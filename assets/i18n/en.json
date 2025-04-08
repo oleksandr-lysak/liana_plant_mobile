@@ -48,5 +48,44 @@
   },
   "settings_view": {
     "logout": "Logout"
+  },
+  "booking": {
+    "name":"Name",
+    "phone":"Phone",
+    "select_service": "Select service",
+    "input_details": "Input details"
+  },
+  "data": {
+    "services":{
+      "hair_styling": "Hair styling",
+      "hair_cutting": "Hair cutting",
+      "hair_coloring": "Hair coloring",
+      "makeup": "Makeup",
+      "nail_service": "Nail service",
+      "skin_care": "Skin care",
+      "massage": "Massage",
+      "hair_removal": "Hair removal",
+      "tattoo": "Tattoo",
+      "piercing": "Piercing",
+      "cosmetics_selection": "Cosmetics selection",
+      "cosmetology": "Cosmetology",
+      "microdermabrasion": "Microdermabrasion",
+      "mesotherapy": "Mesotherapy",
+      "biorevitalization": "Biorevitalization",
+      "plasmolifting": "Plasmolifting",
+      "thread_lifting": "Thread lifting",
+      "contour_plastic": "Contour plastic",
+      "botulinum_therapy": "Botulinum therapy",
+      "fillers": "Fillers",
+      "laser_epilation": "Laser epilation",
+      "laser_rejuvenation": "Laser rejuvenation",
+      "laser_capillaries": "Laser capillaries",
+      "laser_pigmentation": "Laser pigmentation",
+      "laser_tattoo_removal": "Laser tattoo removal",
+      "laser_resurfacing": "Laser resurfacing",
+      "laser_lipolysis": "Laser lipolysis",
+      "laser_photorejuvenation": "Laser photorejuvenation",
+      "laser_therapy": "Laser therapy"
+    }
   }
 }

@@ -36,12 +36,12 @@ class ButtonState extends State<Button> {
     TextStyle textStyle = Theme.of(context).textTheme.bodyMedium!;
     if (widget.size == Size.small) {
       buttonStyle = buttonStyle.copyWith(
-        padding: WidgetStateProperty.all(EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0)),
+        padding: WidgetStateProperty.all(const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0)),
       );
       textStyle = Theme.of(context).textTheme.bodySmall!;
     } else if (widget.size == Size.large) {
       buttonStyle = buttonStyle.copyWith(
-        padding: WidgetStateProperty.all(EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0)),
+        padding: WidgetStateProperty.all(const EdgeInsets.symmetric(vertical: 12.0, horizontal: 8.0)),
       );
       textStyle = Theme.of(context).textTheme.bodyLarge!;
     }

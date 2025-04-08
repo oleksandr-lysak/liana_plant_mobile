@@ -21,15 +21,26 @@ class SlotService {
         'time-slots/store', {'client': client, 'service': service});
   }
 
-  Future<void> bookSlotFromClient(String name, String phone, bool isBooked,
-      DateTime dateTime, Service service, int masterId) async {
-    final response =
-        await apiService.postRequest('appointments/book', {
+  Future<ResultBookSlot> bookSlotFromClient(String name, String phone,
+      bool isBooked, DateTime dateTime, Service service, int masterId) async {
+    final response = await apiService.postRequest('appointments/book', {
       'master_id': masterId,
       'start_time': dateTime.toString(),
       'client_phone': phone,
       'service_id': service.id,
       'duration': 60,
     });
+    return ResultBookSlot(
+        success: response['error'] == false,
+        message: response['message'],
+      );
+    
   }
+}
+
+class ResultBookSlot {
+  final bool success;
+  final String message;
+
+  ResultBookSlot({required this.success, required this.message});
 }

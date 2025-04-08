@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 class AppThemes {
-  static Color mainColorDark = const Color.fromRGBO(184, 255, 91, 1);
+  static Color mainColorDark = const Color.fromRGBO(74, 222, 128, 1);
   static Color mainColorLight = const Color.fromARGB(255, 85, 133, 255);
   static final ThemeData darkTheme = ThemeData(
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: Color.fromRGBO(184, 255, 91, 1),
+      backgroundColor: const Color.fromRGBO(74, 222, 128, 1),
       selectedItemColor: Colors.black,
       unselectedItemColor: Colors.black54,
     ),
@@ -86,7 +86,7 @@ class AppThemes {
         borderSide: BorderSide.none, // Без бордеру
       ),
       enabledBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: Color.fromRGBO(184, 255, 91, 1)),
+        borderSide: BorderSide(color:  Color.fromRGBO(74, 222, 128, 1)),
       ),
       focusedBorder: OutlineInputBorder(
         borderSide: BorderSide(color: Color(0xFF64B5F6)),
@@ -100,14 +100,14 @@ class AppThemes {
       ),
     ),
     checkboxTheme: CheckboxThemeData(
-      fillColor: WidgetStateProperty.all(const Color.fromRGBO(184, 255, 91, 1)),
+      fillColor: WidgetStateProperty.all(const Color.fromRGBO(74, 222, 128, 1)),
       checkColor: WidgetStateProperty.all(Colors.black),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(4.0),
       ),
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: Color.fromRGBO(184, 255, 91, 1),
+      backgroundColor:  Color.fromRGBO(74, 222, 128, 1),
       foregroundColor: Colors.black,
     ),
     dialogTheme: const DialogTheme(

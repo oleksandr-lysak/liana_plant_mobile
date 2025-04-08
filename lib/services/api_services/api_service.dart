@@ -37,35 +37,59 @@ class ApiService {
   }
 
   /// GET запит
-  Future<Map<String, dynamic>> getRequest(String endpoint, {Map<String, String>? headers}) async {
+  Future<Map<String, dynamic>> getRequest(String endpoint,
+      {Map<String, String>? headers}) async {
     String url = '$apiUrl$endpoint';
     try {
-      await _addHeaders(headers); // Додаємо заголовки з токеном та іншими параметрами
+      await _addHeaders(
+          headers); // Додаємо заголовки з токеном та іншими параметрами
       final response = await dio.get(url);
-      
+
       if (response.statusCode == 200) {
         return response.data;
       } else {
-        throw Exception('Failed GET request with status: ${response.statusCode}');
+        throw Exception(
+            'Failed GET request with status: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('GET request error($url): $e');
     }
   }
 
-  /// POST запит
-  Future<Map<String, dynamic>> postRequest(String endpoint, dynamic data, {Map<String, String>? headers}) async {
+  /// Base method for handling error responses
+  Map<String, dynamic> _handleErrorResponse(Response? response) {
+    final statusCode = response?.statusCode ?? 0;
+
+    if (statusCode == 500) {
+      throw Exception('Internal Server Error (500)');
+    }
+
+    return {
+      'error': true,
+      'status': statusCode,
+      'message': response?.data['message'] ?? 'Request error',
+    };
+  }
+
+  /// POST request
+  Future<Map<String, dynamic>> postRequest(String endpoint, dynamic data,
+      {Map<String, String>? headers}) async {
     String url = '$apiUrl$endpoint';
+
     try {
-      await _addHeaders(headers); // Додаємо заголовки з токеном та іншими параметрами
+      await _addHeaders(headers);
       final response = await dio.post(url, data: data);
-      
+
       if (response.statusCode == 200) {
         return response.data;
-      } else {
-        throw Exception('Failed POST request with status: ${response.statusCode}');
       }
+
+      return _handleErrorResponse(response);
     } catch (e) {
+      if (e is DioException) {
+        return _handleErrorResponse(e.response);
+      }
+
       throw Exception('POST request error($url): $e');
     }
   }
