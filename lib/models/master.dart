@@ -41,7 +41,7 @@ class Master {
       id: json['id'] ?? 0,
       name: json['name'],
       phone: json['phone'],
-      address: json['address'],
+      address: json['address']??'',
       location: LatLng(lat, lng),
       description: json['description'],
       photo: json['main_photo']??'',

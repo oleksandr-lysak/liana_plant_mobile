@@ -13,9 +13,12 @@ class AppConstants {
   String get urlTemplate =>
       "https://api.mapbox.com/styles/v1/rotting/$mapBoxStyleId/tiles/256/{z}/{x}/{y}@2x?access_token=$mapBoxAccessToken";
 
-
-  static const String serverUrl = 'http://10.0.2.2:8002/api/';
-  static const String publicServerUrl = 'http://10.0.2.2:8002/';
+  //LOCAL
+  // static const String serverUrl = 'http://10.0.2.2:88/api/';
+  // static const String publicServerUrl = 'http://10.0.2.2:88/';
+  //PROD
+  static const String serverUrl = 'https://beauty-hub.online/api/';
+  static const String publicServerUrl = 'https://beauty-hub.online/';
 
   static const myLocation = LatLng(47.844637, 11.147302);
 

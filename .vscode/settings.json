@@ -1,3 +1,8 @@
 {
-    "gitConfigUser.selectedProfile": "Oleksand Lysak"
+    "gitConfigUser.selectedProfile": "Oleksand Lysak",
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#37127A",
+        "titleBar.activeBackground": "#4C1AAB",
+        "titleBar.activeForeground": "#FCFBFE"
+    }
 }

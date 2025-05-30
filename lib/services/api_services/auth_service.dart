@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:liana_plant/constants/app_constants.dart';
@@ -63,16 +64,42 @@ class AuthService {
   }
 
   Future<void> register(
-      Map<String, dynamic> userData, BuildContext context) async {
+    Map<String, dynamic> userData, BuildContext context) async {
+  try {
     final response =
         await apiService.postRequest('auth/master-register', userData);
+
     final token = response['token'];
     final tokenService = Provider.of<TokenService>(context, listen: false);
     final userService = Provider.of<UserService>(context, listen: false);
     await tokenService.saveToken(token);
     User user = User.fromJson(response['user']);
     await userService.saveUserData(user);
+  } catch (e) {
+    if (e is DioException && e.response?.statusCode == 422) {
+      final errors = e.response?.data['errors'];
+      if (errors != null) {
+        errors.forEach((key, messages) {
+          for (var message in messages) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(message.toString())),
+            );
+          }
+        });
+      } else {
+        final message = e.response?.data['message'] ?? 'Невідома помилка валідації';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Помилка під час реєстрації: $e')),
+      );
+    }
   }
+}
+
 
   Future<void> sendSms(String phone) async {
     var result =

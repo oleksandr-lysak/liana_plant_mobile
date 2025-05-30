@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../classes/app_themes.dart';
 import '../models/master.dart';
 import '../providers/theme_provider.dart';
+import '../constants/app_constants.dart';
 
 class PulsatingMaster extends StatefulWidget {
   final Master master;
@@ -52,16 +54,48 @@ class PulsatingIconState extends State<PulsatingMaster>
         ? 'assets/icons/location.svg'
         : 'assets/icons/location.svg';
 
+    // Формуємо повний URL для фото
+    String photoUrl = widget.master.photo.isNotEmpty
+        ? '${AppConstants.publicServerUrl}${widget.master.photo}'
+        : '';
+
     return AnimatedBuilder(
       animation: _bounceAnimation,
       builder: (context, child) {
         return Transform.translate(
-          offset:
-              Offset(0, _bounceAnimation.value), // Анімація стрибка по осі Y
-          child: SvgPicture.asset(
-            iconPath,
-            height: 70, // Налаштування розміру
-            width: 70,
+          offset: Offset(0, _bounceAnimation.value),
+          child: Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: widget.master.available ? Colors.green : Colors.grey,
+                width: 2,
+              ),
+            ),
+            child: ClipOval(
+              child: photoUrl.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: photoUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => SvgPicture.asset(
+                        iconPath,
+                        height: 100,
+                        width: 100,
+                      ),
+                      errorWidget: (context, url, error) => SvgPicture.asset(
+                        iconPath,
+                        height: 100,
+                        width: 100,
+                      ),
+                    )
+                  : SvgPicture.asset(
+                      iconPath,
+                      height: 100,
+                      width: 100,
+                    ),
+            ),
           ),
         );
       },
