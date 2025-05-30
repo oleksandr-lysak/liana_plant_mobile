@@ -21,6 +21,10 @@ import '../../classes/liana_marker.dart';
 import '../../models/master.dart';
 import '../../providers/theme_provider.dart';
 import '../../services/language_service.dart';
+import 'package:liana_plant/widgets/animated_dropdown_field.dart';
+import 'package:liana_plant/providers/service_provider.dart';
+import 'package:liana_plant/widgets/map_filter_dialog.dart';
+import 'package:liana_plant/widgets/user_location_marker.dart';
 
 class MapView extends StatefulWidget {
   const MapView({super.key});
@@ -37,19 +41,41 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
   late AnimationController _animationController;
   List<Master> mapMasters = [];
   List<LianaMarker> masters = [];
-  LatLng currentLocation = AppConstants.myLocation;
+  LatLng? currentLocation;
   int selectedIndex = 0;
   bool loading = true;
   int totalPages = 1;
   int currentPage = 1;
+
+  String? filterName;
+  double? filterRating;
+  bool? filterAvailable;
+  int? filterServiceId;
+  String? sortBy;
+
+  DropdownItem? selectedService;
+  TextEditingController nameController = TextEditingController();
+  double? selectedRating;
+  bool? selectedAvailable;
+  String? selectedSort;
 
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(
         duration: const Duration(milliseconds: 1000), vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ServiceProvider>(context, listen: false).loadSpecialties();
+    });
+    _initLocationAndLoadData();
+  }
 
-    _loadMapData();
+  Future<void> _initLocationAndLoadData() async {
+    final location = await LocationService.getCurrentLocation();
+    setState(() {
+      currentLocation = location;
+    });
+    await _loadMapData(location);
   }
 
   Future<List<Master>> getData(
@@ -62,8 +88,22 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
     String serverUrl = AppConstants.serverUrl;
     final String locale = await LanguageService.getLanguage() ?? 'en';
     final fcmToken = await FCMService.getToken();
-    String url =
-        '${serverUrl}masters?lng=$longitude&lat=$latitude&zoom=$zoom&page=$page&locale=$locale?&fcm_token=$fcmToken';
+    Map<String, dynamic> params = {
+      'lng': longitude,
+      'lat': latitude,
+      'zoom': zoom,
+      'page': page,
+      'locale': locale,
+      'fcm_token': fcmToken,
+    };
+    if (filterName != null && filterName!.isNotEmpty) params['name'] = filterName;
+    if (filterRating != null) params['rating'] = filterRating;
+    if (filterAvailable != null) params['available'] = filterAvailable! ? 1 : 0;
+    if (filterServiceId != null) params['service_id'] = filterServiceId;
+    if (sortBy != null && sortBy!.isNotEmpty) params['sort'] = sortBy;
+
+    String url = '${serverUrl}masters?';
+    url += params.entries.map((e) => "${e.key}=${e.value}").join('&');
 
     Response response = await dio.get(url);
     apiData = response.data;
@@ -74,35 +114,31 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
     return tagObjs;
   }
 
-  Future<void> _loadMapData() async {
-    final location = await LocationService.getCurrentLocation();
+  Future<void> _loadMapData(LatLng position) async {
     double zoom = 13;
 
-    // Отримання даних для першої сторінки
     final stopwatch = Stopwatch()..start();
     if (totalPages >= 1) {
       await _fetchMarkers(
-        location.longitude,
-        location.latitude,
+        position.longitude,
+        position.latitude,
         currentPage,
         zoom,
-        updateImmediately: true, // Показати маркери першої сторінки
+        updateImmediately: true,
       );
     }
     stopwatch.stop();
 
-    // Отримання даних для наступних сторінок асинхронно
     if (totalPages > 1) {
       List<Future<List<Master>>> fetchRequests = [];
 
       for (int page = 2; page <= totalPages; page++) {
         fetchRequests
-            .add(getData(location.longitude, location.latitude, page, zoom));
+            .add(getData(position.longitude, position.latitude, page, zoom));
       }
 
       List<List<Master>> results = await Future.wait(fetchRequests);
 
-      // Додавання даних з інших сторінок
       setState(() {
         for (var masters in results) {
           mapMasters.addAll(masters);
@@ -110,7 +146,6 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
         _createMarkers();
       });
     } else {
-      // Якщо лише одна сторінка
       setState(() {
         loading = false;
       });
@@ -127,17 +162,17 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
         totalPages = masters.isNotEmpty ? apiData["meta"]["last_page"] : 1;
       }
 
-      // Оновлюємо маркери та показуємо мапу після першої сторінки
       if (updateImmediately) {
         _createMarkers();
-        loading = false; // Припускаємо, що перша сторінка завантажена
+        loading = false;
       }
     });
   }
 
   void _createMarkers() {
     masters.clear();
-    for (var master in mapMasters) {
+    for (int i = 0; i < mapMasters.length; i++) {
+      final master = mapMasters[i];
       masters.add(
         LianaMarker(
           height: 40,
@@ -146,8 +181,7 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
           master: master,
           child: GestureDetector(
             onTap: () {
-              int index = mapMasters.indexOf(master);
-              _onMarkerTap(index);
+              _onMarkerTap(i);
             },
             child: PulsatingMaster(master: master),
           ),
@@ -165,7 +199,7 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
     AnimationService.animatedMapMove(
       mapController,
       _animationController,
-      currentLocation,
+      currentLocation!,
       mapController.camera.zoom,
     );
     pageController.animateToPage(index,
@@ -173,17 +207,54 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
   }
 
   void _moveToCurrentLocation() {
+    if (currentLocation == null) return;
     AnimationService.animatedMapMove(
       mapController,
       _animationController,
-      currentLocation,
+      currentLocation!,
       18,
+    );
+  }
+
+  void _showFilterDialog() async {
+    final serviceProvider = Provider.of<ServiceProvider>(context, listen: false);
+    await showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.35),
+      builder: (context) {
+        return MapFilterDialog(
+          services: serviceProvider.services,
+          initialName: filterName,
+          initialServiceId: filterServiceId,
+          initialRating: filterRating,
+          initialAvailable: filterAvailable,
+          initialSort: sortBy,
+          onApply: ({String? name, int? serviceId, double? rating, bool? available, String? sort}) async {
+            setState(() {
+              filterName = name;
+              filterServiceId = serviceId;
+              filterRating = rating;
+              filterAvailable = available;
+              sortBy = sort;
+              mapMasters.clear();
+              masters.clear();
+              loading = true;
+              currentPage = 1;
+            });
+            if (currentLocation != null) {
+              await _loadMapData(currentLocation!);
+            }
+          },
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    String urlTemplate = AppConstants().urlTemplate;
+    if (currentLocation == null) {
+      return const Center(child: Loading());
+    }
     return loading
         ? const Center(
             child: Loading(),
@@ -214,15 +285,18 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                     minZoom: 2,
                     maxZoom: 18,
                     initialZoom: 11,
-                    initialCenter: currentLocation,
+                    initialCenter: currentLocation!,
+                    interactionOptions: const InteractionOptions(flags: InteractiveFlag.all & ~InteractiveFlag.rotate),
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate: urlTemplate,
+                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.it-pragmat.plant',
-                      tileProvider:
-                          const FMTCStore('mapStore').getTileProvider(),
+                      tileProvider: const FMTCStore('mapStore').getTileProvider(),
                     ),
+                    // User location marker
+                    if (currentLocation != null)
+                      UserLocationMarker(location: currentLocation!),
                     MarkerClusterLayerWidget(
                       options: MarkerClusterLayerOptions(
                         maxClusterRadius: 100,
@@ -243,7 +317,6 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                                     markers: masters.cast<LianaMarker>(),
                                   ),
                                 ),
-                                // Віджет для тексту
                                 Center(
                                   child: Text(
                                     '${masters.length}',
@@ -286,7 +359,7 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                                     MapCard(item: mapMasters[index]),
                                     Positioned(
                                       top:
-                                          20, // Висота, на якій розмістити полоску
+                                          20,
                                       left: 0,
                                       right: 0,
                                       child: Center(
@@ -328,7 +401,7 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                 Positioned(
                   right: 10,
                   bottom: MediaQuery.of(context).size.height * 0.3 +
-                      165, // Місце під кнопками zoom
+                      165,
                   child: FloatingActionButton(
                     onPressed: _moveToCurrentLocation,
                     backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -336,7 +409,18 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                     child: Icon(
                       Icons.my_location,
                       color: Theme.of(context).indicatorColor,
-                    ), // Іконка для позиціювання на поточному положенні
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 10,
+                  bottom: MediaQuery.of(context).size.height * 0.3 + 235,
+                  child: FloatingActionButton(
+                    heroTag: 'filter_fab',
+                    onPressed: _showFilterDialog,
+                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                    elevation: 10.0,
+                    child: Icon(Icons.filter_alt, color: Theme.of(context).indicatorColor),
                   ),
                 ),
                 Positioned(
@@ -345,27 +429,25 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                   child: Column(
                     children: [
                       FloatingActionButton(
+                        heroTag: 'zoom_in_fab',
                         onPressed: () {
                           final zoom = mapController.camera.zoom + 1;
                           mapController.move(mapController.camera.center, zoom);
                         },
-                        backgroundColor:
-                            Theme.of(context).scaffoldBackgroundColor,
+                        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                         elevation: 10.0,
-                        child: Icon(Icons.zoom_in,
-                            color: Theme.of(context).indicatorColor),
+                        child: Icon(Icons.zoom_in, color: Theme.of(context).indicatorColor),
                       ),
                       const SizedBox(height: 10),
                       FloatingActionButton(
+                        heroTag: 'zoom_out_fab',
                         onPressed: () {
                           final zoom = mapController.camera.zoom - 1;
                           mapController.move(mapController.camera.center, zoom);
                         },
-                        backgroundColor:
-                            Theme.of(context).scaffoldBackgroundColor,
+                        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                         elevation: 10.0,
-                        child: Icon(Icons.zoom_out,
-                            color: Theme.of(context).indicatorColor),
+                        child: Icon(Icons.zoom_out, color: Theme.of(context).indicatorColor),
                       ),
                     ],
                   ),

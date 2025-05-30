@@ -35,6 +35,11 @@
     "search_placeholder": "Шукати в цій області",
     "select_location": "Виберіть розташування",
     "book_appointment": "Записатись",
+    "filter_title": "Фільтр і сортування",
+    "filter_name": "Пошук",
+    "filter_rating": "Рейтинг",
+    "filter_available": "Доступно",
+    "filter_service": "Послуга",
     "master_dialog": {
       "title": "Створити майстра чи увійти?",
       "create": "Створити",

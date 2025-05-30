@@ -14,6 +14,7 @@ class MapCard extends StatelessWidget {
   Widget build(BuildContext context) {
     String description = item.description;
     String photo = AppConstants.publicServerUrl + item.photo;
+    print('PHOTO URL: ' + photo);
     if (description.length > 200) {
       description = '${description.substring(0, 200)}...';
     }
@@ -97,6 +98,7 @@ class MapCard extends StatelessWidget {
                           fit: BoxFit.cover,
                           errorBuilder: (BuildContext context, Object error,
                               StackTrace? stackTrace) {
+                                print('Image error: $error');
                             return Image.asset(
                               'assets/images/user_icon.png',
                               width: 100,

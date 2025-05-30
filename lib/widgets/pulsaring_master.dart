@@ -58,6 +58,7 @@ class PulsatingIconState extends State<PulsatingMaster>
     String photoUrl = widget.master.photo.isNotEmpty
         ? '${AppConstants.publicServerUrl}${widget.master.photo}'
         : '';
+    print('PHOTO URL: ' + photoUrl);
 
     return AnimatedBuilder(
       animation: _bounceAnimation,

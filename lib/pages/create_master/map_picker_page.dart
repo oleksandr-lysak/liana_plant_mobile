@@ -87,7 +87,7 @@ class MapPickerPageState extends State<MapPickerPage> {
             ),
             children: [
               TileLayer(
-                urlTemplate: AppConstants().urlTemplate,
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.it-pragmat.plant',
                 tileProvider: const FMTCStore('mapStore').getTileProvider(),
               ),
