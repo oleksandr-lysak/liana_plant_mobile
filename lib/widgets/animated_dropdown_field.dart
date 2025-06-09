@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liana_plant/constants/styles.dart';
 
 class DropdownItem {
   final int id;
@@ -26,14 +27,14 @@ class AnimatedDropdownField extends StatefulWidget {
   final String? Function(DropdownItem?)? validator;
 
   const AnimatedDropdownField({
-    Key? key,
+    super.key,
     required this.labelText,
     this.hintText,
     required this.items,
     this.selectedItem,
     this.onChanged,
     this.validator,
-  }) : super(key: key);
+  });
 
   @override
   AnimatedDropdownFieldState createState() => AnimatedDropdownFieldState();
@@ -82,13 +83,13 @@ class AnimatedDropdownFieldState extends State<AnimatedDropdownField> {
             labelText: widget.labelText,
             labelStyle: TextStyle(
               color: _isFocused
-                  ? Theme.of(context).primaryColor
-                  : Colors.grey.shade600,
+                  ? Styles().primaryColor
+                  : Styles().primaryColor,
               fontWeight: FontWeight.w400,
             ),
             hintText: widget.hintText,
             hintStyle: TextStyle(
-              color: Colors.grey.shade600,
+              color: Styles().primaryColor,
               fontWeight: FontWeight.w300,
             ),
             focusedBorder: const OutlineInputBorder(
@@ -99,15 +100,18 @@ class AnimatedDropdownFieldState extends State<AnimatedDropdownField> {
           icon: Icon(
             Icons.arrow_drop_down,
             color: _isFocused
-                ? Theme.of(context).primaryColor
-                : Colors.grey.shade700,
+                ? Styles().primaryColor
+                : Styles.descriptionColor,
           ),
           items: widget.items
               .map((item) => DropdownMenuItem<DropdownItem>(
                     value: item,
                     child: Text(
                       item.name,
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: TextStyle(
+                        color: Styles.textInputColor,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
                   ))
               .toList(),
@@ -119,7 +123,7 @@ class AnimatedDropdownFieldState extends State<AnimatedDropdownField> {
               widget.onChanged!(value);
             }
           },
-          dropdownColor: Theme.of(context).hoverColor, // Колір фону для меню
+          dropdownColor: Styles().backgroundFormColor,
           itemHeight: 48.0, // Висота кожного елемента меню
         ),
       ),

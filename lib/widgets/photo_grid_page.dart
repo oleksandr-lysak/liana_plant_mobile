@@ -6,7 +6,7 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:latlong2/latlong.dart' as latlong;
 
 class PhotoGridPage extends StatefulWidget {
-  const PhotoGridPage({Key? key}) : super(key: key);
+  const PhotoGridPage({super.key});
 
   @override
   State<PhotoGridPage> createState() => _PhotoGridPageState();
@@ -65,7 +65,6 @@ class _PhotoGridPageState extends State<PhotoGridPage> {
     final bytes = await file.readAsBytes();
     final result = await PhotoManager.editor
         .saveImage(bytes, title: 'photo1', filename: 'photo1');
-    if (result != null) {
       final List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
         type: RequestType.image,
         onlyAll: true,
@@ -79,17 +78,15 @@ class _PhotoGridPageState extends State<PhotoGridPage> {
       } catch (e) {
         return null;
       }
-    }
-    return null;
   }
 
   void _onPhotoTapped(AssetEntity photo) {
     setState(() {
       if (_selectedPhoto == photo) {
         _selectedPhoto =
-            null; // Деактивувати вибір, якщо повторно натиснули на вибране фото
+            null;
       } else {
-        _selectedPhoto = photo; // Вибрати нове фото
+        _selectedPhoto = photo;
       }
     });
   }

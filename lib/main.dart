@@ -1,9 +1,8 @@
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:liana_plant/constants/app_constants.dart';
-import 'package:liana_plant/models/user.dart';
 import 'package:liana_plant/pages/booking/booking_page.dart';
 import 'package:liana_plant/pages/create_master/summary_info_page.dart';
 import 'package:liana_plant/pages/home/home_page.dart';
@@ -11,7 +10,6 @@ import 'package:liana_plant/pages/create_master/map_picker_page.dart';
 import 'package:liana_plant/pages/create_master/master_creation_page.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:liana_plant/pages/home/map_view.dart';
-import 'package:liana_plant/pages/settings/settings_page.dart';
 import 'package:liana_plant/providers/language_provider.dart';
 import 'package:liana_plant/providers/notification_provider.dart';
 import 'package:liana_plant/providers/service_provider.dart';
@@ -27,7 +25,6 @@ import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'classes/app_scroll_behavior.dart';
 import 'classes/app_themes.dart';
-import 'widgets/custom_bottom_navigation_bar.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 
 void main() async {
@@ -49,12 +46,11 @@ void main() async {
   String? savedLanguage = await LanguageService.getLanguage();
   final tokenService = TokenService();
   final token = await tokenService.getToken();
-  Object? initErr;
   try {
     await FMTCObjectBoxBackend().initialise();
     await const FMTCStore('mapStore').manage.create();
   } catch (err) {
-    initErr = err;
+    LogService.log('Error initializing FMTC: $err');
   }
   runApp(
     MultiProvider(
@@ -89,7 +85,7 @@ class MyApp extends StatefulWidget {
   final String? savedLanguage;
   final String? token;
 
-  const MyApp({Key? key, this.savedLanguage, this.token}) : super(key: key);
+  const MyApp({super.key, this.savedLanguage, this.token});
 
   static void restartApp(BuildContext context) {
     final MyAppState state = context.findAncestorStateOfType<MyAppState>()!;
@@ -102,8 +98,6 @@ class MyApp extends StatefulWidget {
 
 class MyAppState extends State<MyApp> {
   Key key = UniqueKey();
-  int _selectedIndex = 0;
-  late Future<List<Widget>> pagesFuture;
 
   void restartApp() {
     setState(() {
@@ -111,47 +105,14 @@ class MyAppState extends State<MyApp> {
     });
   }
 
-  Future<bool> isMaster() async {
-    return await UserService().isMaster();
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  Future<List<Widget>> setNavigationBar() async {
-    List<Widget> pages;
-    if (await isMaster()) {
-      User? user = await UserService().getUser();
-      int masterId = user!.master!.id;
-      String masterName = user.master!.name;
-      pages = [
-        BookingPage(
-          masterId: masterId,
-          masterName: masterName,
-        ),
-        const MapView(),
-        const SettingsPage(),
-      ];
-    } else {
-      pages = [
-        const MapView(),
-        const SettingsPage(),
-      ];
-    }
-    return pages;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    pagesFuture = setNavigationBar();
-  }
-
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(
+  const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark,
+  ),
+);
     FCMService.initializeFCM(context: context);
     return Consumer<ThemeProvider>(builder: (context, themeProvider, child) {
       return Consumer<LanguageProvider>(
@@ -159,16 +120,7 @@ class MyAppState extends State<MyApp> {
         return MaterialApp(
           key: key,
           scrollBehavior: AppScrollBehavior(),
-          theme: themeProvider.themeData.copyWith(
-            bottomNavigationBarTheme: BottomNavigationBarThemeData(
-              backgroundColor: Theme.of(context).primaryColor,
-              selectedItemColor: Theme.of(context).colorScheme.secondary,
-              unselectedItemColor:
-                  Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-            ),
-          ),
-          themeMode: ThemeMode.system,
-          darkTheme: AppThemes.darkTheme,
+          
           localizationsDelegates: [
             FlutterI18nDelegate(
               translationLoader: FileTranslationLoader(
@@ -179,28 +131,7 @@ class MyAppState extends State<MyApp> {
               missingTranslationHandler: (key, locale) {},
             ),
           ],
-          home: FutureBuilder<List<Widget>>(
-            future: pagesFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                    child:
-                        CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              }
-
-              List<Widget> pages = snapshot.data!;
-              return Scaffold(
-                body: pages[_selectedIndex],
-                bottomNavigationBar: CustomBottomNavigationBar(
-                  selectedIndex: _selectedIndex,
-                  themeProvider: themeProvider,
-                  onItemTapped: _onItemTapped,
-                ),
-              );
-            },
-          ),
+          home: const MapView(),
           routes: {
             '/create-master': (context) => const MasterCreationPage(),
             '/map-picker': (context) => const MapPickerPage(),

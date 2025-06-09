@@ -6,7 +6,7 @@ import '../classes/app_themes.dart';
 import '../providers/theme_provider.dart';
 
 class Loading extends StatefulWidget {
-  const Loading({Key? key}) : super(key: key);
+  const Loading({super.key});
 
   @override
   LoadingState createState() => LoadingState();

@@ -8,7 +8,7 @@ import 'package:liana_plant/widgets/buttons.dart';
 import '../../services/language_service.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  const SettingsPage({super.key});
 
   @override
   State<SettingsPage> createState() => _HomePageState();
@@ -33,6 +33,7 @@ class _HomePageState extends State<SettingsPage> {
   void _changeLanguage(BuildContext context, String? languageCode) async {
     if (languageCode != null) {
       await FlutterI18n.refresh(context, Locale(languageCode));
+      if (!context.mounted) return;
       await LanguageService.saveLanguage(context, languageCode);
       setState(() {
         _selectedLanguage = languageCode;

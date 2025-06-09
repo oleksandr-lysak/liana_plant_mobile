@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 class AppThemes {
   static Color mainColorDark = const Color.fromRGBO(74, 222, 128, 1);
-  static Color mainColorLight = const Color.fromARGB(255, 85, 133, 255);
+  static Color mainColorLight = const Color.fromARGB(255, 85, 255, 142);
   static final ThemeData darkTheme = ThemeData(
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: const Color.fromRGBO(74, 222, 128, 1),
+      backgroundColor: Color.fromRGBO(74, 222, 128, 1),
       selectedItemColor: Colors.black,
       unselectedItemColor: Colors.black54,
     ),

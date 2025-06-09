@@ -10,8 +10,9 @@ import '../constants/app_constants.dart';
 
 class PulsatingMaster extends StatefulWidget {
   final Master master;
+  final bool isActive;
 
-  const PulsatingMaster({Key? key, required this.master}) : super(key: key);
+  const PulsatingMaster({super.key, required this.master, this.isActive = false});
 
   @override
   PulsatingIconState createState() => PulsatingIconState();
@@ -58,7 +59,6 @@ class PulsatingIconState extends State<PulsatingMaster>
     String photoUrl = widget.master.photo.isNotEmpty
         ? '${AppConstants.publicServerUrl}${widget.master.photo}'
         : '';
-    print('PHOTO URL: ' + photoUrl);
 
     return AnimatedBuilder(
       animation: _bounceAnimation,
@@ -80,16 +80,16 @@ class PulsatingIconState extends State<PulsatingMaster>
                   ? CachedNetworkImage(
                       imageUrl: photoUrl,
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => SvgPicture.asset(
-                        iconPath,
-                        height: 100,
-                        width: 100,
-                      ),
-                      errorWidget: (context, url, error) => SvgPicture.asset(
-                        iconPath,
-                        height: 100,
-                        width: 100,
-                      ),
+                      // placeholder: (context, url) => SvgPicture.asset(
+                      //   iconPath,
+                      //   height: 100,
+                      //   width: 100,
+                      // ),
+                      // errorWidget: (context, url, error) => SvgPicture.asset(
+                      //   iconPath,
+                      //   height: 100,
+                      //   width: 100,
+                      // ),
                     )
                   : SvgPicture.asset(
                       iconPath,

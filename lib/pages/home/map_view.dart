@@ -1,12 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:liana_plant/constants/app_constants.dart';
+import 'package:liana_plant/constants/styles.dart';
 import 'package:liana_plant/services/fcm_service.dart';
 import 'package:liana_plant/widgets/loading.dart';
 import 'package:liana_plant/widgets/map_card.dart';
@@ -19,7 +19,6 @@ import 'package:provider/provider.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import '../../classes/liana_marker.dart';
 import '../../models/master.dart';
-import '../../providers/theme_provider.dart';
 import '../../services/language_service.dart';
 import 'package:liana_plant/widgets/animated_dropdown_field.dart';
 import 'package:liana_plant/providers/service_provider.dart';
@@ -183,7 +182,7 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
             onTap: () {
               _onMarkerTap(i);
             },
-            child: PulsatingMaster(master: master),
+            child: PulsatingMaster(master: master, isActive: i == selectedIndex),
           ),
         ),
       );
@@ -260,23 +259,7 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
             child: Loading(),
           )
         : Scaffold(
-            appBar: AppBar(
-              backgroundColor: Theme.of(context).primaryColor,
-              title: Text(
-                FlutterI18n.translate(context, 'map_view.title'),
-                style: Theme.of(context).appBarTheme.titleTextStyle,
-              ),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.brightness_6, color: Colors.black),
-                  onPressed: () {
-                    Provider.of<ThemeProvider>(context, listen: false)
-                        .toggleTheme();
-                  },
-                ),
-              ],
-            ),
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            backgroundColor: Styles.titleColor,
             body: Stack(
               children: [
                 FlutterMap(
@@ -293,19 +276,27 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                       urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.it-pragmat.plant',
                       tileProvider: const FMTCStore('mapStore').getTileProvider(),
+                      keepBuffer: 4,
                     ),
                     // User location marker
                     if (currentLocation != null)
                       UserLocationMarker(location: currentLocation!),
                     MarkerClusterLayerWidget(
                       options: MarkerClusterLayerOptions(
-                        maxClusterRadius: 100,
+                        maxClusterRadius: 45,
                         size: const Size(80, 80),
                         alignment: Alignment.center,
                         padding: const EdgeInsets.all(50),
-                        maxZoom: 15,
+                        maxZoom: 18,
                         showPolygon: false,
                         markers: masters,
+                        onClusterTap: (cluster) {
+                          final map = MapViewState.mapController;
+                          final currentZoom = map.camera.zoom;
+                          final targetZoom = (currentZoom + 2).clamp(0.0, 18.0);
+                          map.move(cluster.markers.first.point, targetZoom);
+                        },
+                        spiderfyCluster: false,
                         builder: (context, masters) {
                           return SizedBox(
                             width: 120,
@@ -331,14 +322,15 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                             ),
                           );
                         },
+                        disableClusteringAtZoom: 18,
                       ),
                     ),
                   ],
                 ),
                 DraggableScrollableSheet(
                   controller: sheetController,
-                  maxChildSize: 0.37,
-                  initialChildSize: 0.37,
+                  maxChildSize: 0.31,
+                  initialChildSize: 0.31,
                   minChildSize: 0.07,
                   builder: (BuildContext context, scrollController) {
                     return CustomScrollView(
@@ -368,7 +360,7 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                                             color: Theme.of(context).hintColor,
                                             borderRadius:
                                                 const BorderRadius.all(
-                                                    Radius.circular(10)),
+                                                    Radius.circular(Styles.borderRadius)),
                                           ),
                                           height: 4,
                                           width: 40,
@@ -387,15 +379,15 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                 ),
                 Positioned(
                   right: 10,
-                  top: MediaQuery.of(context).size.height * 0.01,
+                  top: MediaQuery.of(context).size.height * 0.05,
                   child: FloatingActionButton(
                     onPressed: () {
                       Navigator.pushNamed(context, '/map-picker');
                     },
-                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                    backgroundColor: Styles().primaryColor,
                     elevation: 10.0,
                     child: Icon(Icons.add_location_alt_outlined,
-                        color: Theme.of(context).indicatorColor),
+                        color: Styles.titleColor),
                   ),
                 ),
                 Positioned(
@@ -404,11 +396,11 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                       165,
                   child: FloatingActionButton(
                     onPressed: _moveToCurrentLocation,
-                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                    backgroundColor: Styles().primaryColor,
                     elevation: 10.0,
                     child: Icon(
                       Icons.my_location,
-                      color: Theme.of(context).indicatorColor,
+                      color: Styles.titleColor,
                     ),
                   ),
                 ),
@@ -418,9 +410,9 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                   child: FloatingActionButton(
                     heroTag: 'filter_fab',
                     onPressed: _showFilterDialog,
-                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                    backgroundColor: Styles().primaryColor,
                     elevation: 10.0,
-                    child: Icon(Icons.filter_alt, color: Theme.of(context).indicatorColor),
+                    child: Icon(Icons.filter_alt, color: Styles.titleColor),
                   ),
                 ),
                 Positioned(
@@ -434,9 +426,9 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                           final zoom = mapController.camera.zoom + 1;
                           mapController.move(mapController.camera.center, zoom);
                         },
-                        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                        backgroundColor: Styles().primaryColor,
                         elevation: 10.0,
-                        child: Icon(Icons.zoom_in, color: Theme.of(context).indicatorColor),
+                        child: Icon(Icons.zoom_in, color: Styles.titleColor),
                       ),
                       const SizedBox(height: 10),
                       FloatingActionButton(
@@ -445,9 +437,9 @@ class MapViewState extends State<MapView> with TickerProviderStateMixin {
                           final zoom = mapController.camera.zoom - 1;
                           mapController.move(mapController.camera.center, zoom);
                         },
-                        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                        backgroundColor: Styles().primaryColor,
                         elevation: 10.0,
-                        child: Icon(Icons.zoom_out, color: Theme.of(context).indicatorColor),
+                        child: Icon(Icons.zoom_out, color: Styles.titleColor),
                       ),
                     ],
                   ),

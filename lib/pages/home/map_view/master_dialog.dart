@@ -78,6 +78,7 @@ void showLoginDialog(BuildContext context) {
             child: Text(FlutterI18n.translate(context, 'common.submit')),
             onPressed: () async {
               await AuthService().sendSms(phoneController.text);
+              if (!context.mounted) return;
               Navigator.pop(context);
             },
           ),

@@ -3,11 +3,11 @@ import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:liana_plant/widgets/animated_dropdown_field.dart';
 import 'package:liana_plant/widgets/animated_text_field.dart';
 import 'package:liana_plant/widgets/loading.dart';
-import 'package:provider/provider.dart'; // Додати імпорт для провайдера
-import 'package:liana_plant/providers/service_provider.dart'; // Імпорт для провайдера спеціальностей
+import 'package:provider/provider.dart'; 
+import 'package:liana_plant/providers/service_provider.dart';
 import 'package:latlong2/latlong.dart' as latlong;
 
-import '../../providers/theme_provider.dart'; // Імпорт для роботи з геолокацією
+
 
 class MasterCreationPage extends StatefulWidget {
   const MasterCreationPage({super.key});
@@ -21,6 +21,7 @@ class MasterCreationPageState extends State<MasterCreationPage> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  // ignore: unused_field
   latlong.LatLng? _selectedLocation;
   DropdownItem? selectedItem;
 
@@ -65,40 +66,7 @@ class MasterCreationPageState extends State<MasterCreationPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(FlutterI18n.translate(context, 'create_master')),
-        backgroundColor: Theme.of(context).primaryColor,
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.brightness_6,
-              color: Colors.black,
-            ),
-            onPressed: () {
-              Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.navigate_next, color: Colors.black),
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                Navigator.pushNamed(
-                  context,
-                  '/choose-photo',
-                  arguments: [
-                    _selectedLocation,
-                    _phoneController.text,
-                    _nameController.text,
-                    _descriptionController.text,
-                    selectedItem?.id,
-                  ],
-                );
-              }
-            },
-          ),
-        ],
-      ),
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -114,7 +82,6 @@ class MasterCreationPageState extends State<MasterCreationPage> {
                   if (value == null || value.isEmpty) {
                     return FlutterI18n.translate(context, 'required');
                   }
-                  // Регулярний вираз для валідації українського мобільного номера
                   final RegExp phoneRegExp = RegExp(r'^\+380\d{9}$');
                   if (!phoneRegExp.hasMatch(value)) {
                     return FlutterI18n.translate(context, 'invalid_phone');
@@ -160,12 +127,15 @@ class MasterCreationPageState extends State<MasterCreationPage> {
                 },
               ),
             ],
+            
           ),
         ),
       ),
+
     );
   }
 
+  // ignore: unused_element
   void _submit() {
     if (_formKey.currentState!.validate()) {
       // Your submit logic here

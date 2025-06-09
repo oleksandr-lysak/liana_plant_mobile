@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_i18n/flutter_i18n.dart';
 import 'package:liana_plant/constants/app_constants.dart';
 import 'package:liana_plant/constants/styles.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../models/master.dart';
-import '../../booking/booking_page.dart';
 
 class MapCard extends StatelessWidget {
   const MapCard({super.key, required this.item});
@@ -118,18 +118,20 @@ class MapCard extends StatelessWidget {
                       ),
                       elevation: 0,
                     ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BookingPage(
-                              masterId: item.id, masterName: item.name),
-                        ),
-                      );
+                    onPressed: () async {
+                      final Uri phoneUri = Uri(scheme: 'tel', path: item.phone);
+                      if (await canLaunchUrl(phoneUri)) {
+                        await launchUrl(phoneUri, mode: LaunchMode.externalApplication);
+                      } else {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Не вдалося відкрити телефонний додаток')),
+                        );
+                      }
                     },
                     child: Text(
                       FlutterI18n.translate(
-                          context, 'map_view.book_appointment'),
+                          context, 'map_view.call'),
                       style: Theme.of(context).textTheme.labelSmall,
                     ),
                   ),

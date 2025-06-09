@@ -14,7 +14,7 @@ class MapFilterDialog extends StatefulWidget {
   final void Function({String? name, int? serviceId, double? rating, bool? available, String? sort}) onApply;
 
   const MapFilterDialog({
-    Key? key,
+    super.key,
     required this.services,
     this.initialName,
     this.initialServiceId,
@@ -22,7 +22,7 @@ class MapFilterDialog extends StatefulWidget {
     this.initialAvailable,
     this.initialSort,
     required this.onApply,
-  }) : super(key: key);
+  });
 
   @override
   State<MapFilterDialog> createState() => _MapFilterDialogState();

@@ -10,13 +10,13 @@ class Button extends StatefulWidget {
   final IconData icon;
 
   const Button({
-    Key? key,
+    super.key,
     required this.labelText,
     required this.onPressed,
     required this.active,
     required this.size,
     required this.icon,
-  }) : super(key: key);
+  });
 
   @override
   ButtonState createState() => ButtonState();

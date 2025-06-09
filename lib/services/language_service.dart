@@ -10,6 +10,7 @@ class LanguageService {
   static Future<void> saveLanguage(BuildContext context, String languageCode) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_languageKey, languageCode);
+    if (!context.mounted) return;
     final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
     languageProvider.setLocale(Locale(languageCode));
   }

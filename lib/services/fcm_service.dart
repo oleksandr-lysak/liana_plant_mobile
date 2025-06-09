@@ -1,5 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:liana_plant/services/log_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -37,7 +38,8 @@ class FCMService {
 
     // Налаштування обробника для повідомлень, коли аплікація активна
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Foreground message received: ${message.data}');
+      LogService.log('Foreground message received: ${message.data}');
+      if (!context.mounted) return;
       Provider.of<NotificationsProvider>(context, listen: false)
           .addNotification(message.data);
     });
@@ -49,11 +51,11 @@ class FCMService {
     String? token = await _firebaseMessaging.getToken();
     if (token != null) {
       await saveToken(token);
-      print("FCM Token: $token");
+      LogService.log("FCM Token: $token");
     }
   }
 
   static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-    print("Handling a background message: ${message.messageId}");
+    LogService.log("Handling a background message: ${message.messageId}");
   }
 }
